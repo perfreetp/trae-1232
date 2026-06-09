@@ -1,4 +1,4 @@
-import { Order } from '../types';
+import { Order, DebtStatus } from '../types';
 
 export interface OrderFinance {
   actualArea: number;
@@ -11,6 +11,9 @@ export interface OrderFinance {
   actualPaid: number;
   areaDiff: number;
   hasWorkRecord: boolean;
+  totalPaid: number;
+  remainingDebt: number;
+  debtStatus: DebtStatus;
 }
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -25,6 +28,7 @@ export function calcOrderFinance(order: Order | null | undefined): OrderFinance 
       actualArea: 0, quotedArea: 0, unitPrice: 0,
       workFee: 0, fuelCost: 0, debtAmount: 0,
       totalPayable: 0, actualPaid: 0, areaDiff: 0, hasWorkRecord: false,
+      totalPaid: 0, remainingDebt: 0, debtStatus: 'none',
     };
   }
   const wr = order.workRecord;
@@ -38,12 +42,20 @@ export function calcOrderFinance(order: Order | null | undefined): OrderFinance 
   const totalPayable = round2(workFee + fuelCost);
   const actualPaid = round2(Math.max(0, totalPayable - debtAmount));
   const areaDiff = round2(actualArea - quotedArea);
+  const totalPaid = (order.payments ?? []).reduce((s, p) => s + n(p.amount), 0);
+  const remainingDebt = Math.max(0, round2(debtAmount - totalPaid));
+  let debtStatus: DebtStatus = 'none';
+  if (debtAmount > 0) {
+    if (totalPaid <= 0) debtStatus = 'full';
+    else if (totalPaid >= debtAmount) debtStatus = 'none';
+    else debtStatus = 'partial';
+  }
 
   return {
     actualArea, quotedArea, unitPrice,
     workFee, fuelCost, debtAmount,
     totalPayable, actualPaid, areaDiff,
-    hasWorkRecord,
+    hasWorkRecord, totalPaid, remainingDebt, debtStatus,
   };
 }
 

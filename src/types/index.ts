@@ -64,6 +64,31 @@ export interface Demand {
 
 export type OrderStatus = 'pending' | 'accepted' | 'working' | 'submitted' | 'confirmed' | 'settled';
 
+export type DisputeStatus = 'none' | 'raised' | 'processing' | 'resolved';
+
+export interface OrderDispute {
+  status: DisputeStatus;
+  raisedBy: 'farmer' | 'operator';
+  content: string;
+  createdAt: string;
+  handlerId?: string;
+  handlerName?: string;
+  handledAt?: string;
+  resolution?: string;
+}
+
+export type DebtStatus = 'none' | 'partial' | 'full';
+
+export interface PaymentRecord {
+  id: string;
+  orderId: string;
+  amount: number;
+  method: 'cash' | 'wechat' | 'alipay' | 'bank' | 'other';
+  paidAt: string;
+  paidBy: string;
+  note?: string;
+}
+
 export interface WorkRecord {
   id: string;
   orderId: string;
@@ -78,6 +103,8 @@ export interface WorkRecord {
   note?: string;
   confirmedByFarmer?: boolean;
   confirmedAt?: string;
+  disputed?: boolean;
+  disputeId?: string;
 }
 
 export interface Order {
@@ -104,6 +131,10 @@ export interface Order {
   startedAt?: string;
   completedAt?: string;
   settledAt?: string;
+  dispute?: OrderDispute;
+  debtStatus?: DebtStatus;
+  payments?: PaymentRecord[];
+  paymentMethod?: string;
 }
 
 export interface Machine {

@@ -3,7 +3,7 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { OrderStatus } from '../../types';
+import { OrderStatus, UserRole } from '../../types';
 import { useUserStore } from '../../store/userStore';
 import { useAppStore } from '../../store/appStore';
 import { calcOrderFinance, formatMoney, formatArea } from '../../utils/orderFinance';
@@ -37,8 +37,11 @@ const safeStr = (v: string | undefined | null, fallback = '—'): string => {
 
 const OrderDetailPage: React.FC = () => {
   const router = useRouter();
-  const { currentRole } = useUserStore();
+  const { currentRole, user } = useUserStore();
   const getOrder = useAppStore(state => state.getOrder);
+  const confirmWork = useAppStore(state => state.confirmWork);
+  const raiseDispute = useAppStore(state => state.raiseDispute);
+  const handleDispute = useAppStore(state => state.handleDispute);
 
   const orderId = router.params.id || '';
   const order = getOrder(orderId);
@@ -57,6 +60,7 @@ const OrderDetailPage: React.FC = () => {
   const workHours = order.workRecord ? calcWorkHours(order.workRecord.startTime, order.workRecord.endTime) : '—';
   const evaluation = order.evaluation;
   const rating = safeNum(evaluation?.rating);
+  const dispute = order.dispute;
 
   const timeline = [
     { title: '抢收需求已发起', time: createdAt, active: true },
@@ -81,12 +85,79 @@ const OrderDetailPage: React.FC = () => {
       transfer: { toast: '📨 转派申请已提交' },
       startWork: { url: `/pages/work-submit/index?id=${order.id}` },
       submitWork: { url: `/pages/work-submit/index?id=${order.id}` },
-      confirmWork: { toast: '✅ 已确认作业结果' },
       settle: { url: `/pages/settlement/index?id=${order.id}` },
     };
     const a = actions[type];
     if (a?.url) Taro.navigateTo({ url: a.url });
     else if (a?.toast) Taro.showToast({ title: a.toast, icon: 'success' });
+  };
+
+  const handleConfirmWork = () => {
+    Taro.showModal({
+      title: '确认作业',
+      content: '请确认作业亩数和费用无误，确认后将进入结算环节。',
+      confirmText: '确认无误',
+      confirmColor: '#F59E0B',
+      success: (res) => {
+        if (res.confirm) {
+          confirmWork(order.id);
+          Taro.showToast({ title: '✅ 已确认作业', icon: 'success' });
+        }
+      }
+    });
+  };
+
+  const handleRaiseDispute = () => {
+    Taro.showModal({
+      title: '提出异议',
+      editable: true,
+      placeholderText: '请输入您的异议内容（如亩数不符、作业质量问题等）',
+      confirmText: '提交异议',
+      confirmColor: '#EF4444',
+      success: (res) => {
+        if (res.confirm && res.content?.trim()) {
+          raiseDispute(order.id, res.content.trim());
+          Taro.showToast({ title: '已通知协调员处理', icon: 'none' });
+        } else if (res.confirm && !res.content?.trim()) {
+          Taro.showToast({ title: '请输入异议内容', icon: 'none' });
+        }
+      }
+    });
+  };
+
+  const handleMediateDispute = () => {
+    Taro.showActionSheet({
+      itemList: ['按机手记录通过', '要求重新测量'],
+      success: (sheetRes) => {
+        const confirmed = sheetRes.tapIndex === 0;
+        const resultText = confirmed ? '按机手记录通过' : '要求重新测量';
+        setTimeout(() => {
+          Taro.showModal({
+            title: '填写调解说明',
+            editable: true,
+            placeholderText: `请填写调解处理说明（已选：${resultText}）`,
+            confirmText: '提交处理',
+            confirmColor: '#F59E0B',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                const resolution = modalRes.content?.trim() || resultText;
+                handleDispute(
+                  order.id,
+                  resolution,
+                  user?.id || 'coord001',
+                  user?.name || '协调员',
+                  confirmed
+                );
+                Taro.showToast({
+                  title: confirmed ? '已通过，进入结算' : '已通知重新测量',
+                  icon: 'success'
+                });
+              }
+            }
+          });
+        }, 100);
+      }
+    });
   };
 
   const farmerBtns = (status: OrderStatus) => {
@@ -103,12 +174,12 @@ const OrderDetailPage: React.FC = () => {
         ];
       case 'submitted':
         return [
-          { text: '❌ 有异议', type: 'outline' as const, onClick: () => Taro.showToast({ title: '已通知协调员', icon: 'none' }) },
-          { text: '✅ 确认作业', type: 'primary' as const, onClick: () => handleAction('confirmWork') },
+          { text: '❌ 提出异议', type: 'outline' as const, onClick: handleRaiseDispute },
+          { text: '✅ 确认作业', type: 'primary' as const, onClick: handleConfirmWork },
         ];
       case 'confirmed':
         return [
-          { text: '去评价', type: 'primary' as const, onClick: () => handleAction('settle') },
+          { text: '去结算', type: 'primary' as const, onClick: () => handleAction('settle') },
         ];
       case 'settled':
         return [
@@ -148,7 +219,43 @@ const OrderDetailPage: React.FC = () => {
     }
   };
 
-  const btns = currentRole === 'operator' ? operatorBtns(order.status) : farmerBtns(order.status);
+  const coordinatorBtns = (status: OrderStatus) => {
+    if (dispute?.status === 'raised') {
+      return [
+        { text: '📋 调解处理', type: 'primary' as const, onClick: handleMediateDispute },
+      ];
+    }
+    switch (status) {
+      case 'pending':
+        return [
+          { text: '📞 联系农户', type: 'outline' as const, onClick: () => handleCall(order.farmerPhone) },
+          { text: '调度机手', type: 'primary' as const, onClick: () => Taro.showToast({ title: '调度开发中', icon: 'none' }) },
+        ];
+      case 'settled':
+        return [
+          { text: '返回列表', type: 'primary' as const, onClick: () => Taro.navigateBack() },
+        ];
+      default:
+        return [
+          { text: '📞 联系农户', type: 'outline' as const, onClick: () => handleCall(order.farmerPhone) },
+          { text: '📞 联系机手', type: 'ghost' as const, onClick: () => handleCall(order.operatorPhone) },
+        ];
+    }
+  };
+
+  let btns: Array<{ text: string; type: 'primary' | 'secondary' | 'outline' | 'ghost'; onClick: () => void }>;
+  switch (currentRole as UserRole) {
+    case 'operator':
+      btns = operatorBtns(order.status);
+      break;
+    case 'coordinator':
+      btns = coordinatorBtns(order.status);
+      break;
+    default:
+      btns = farmerBtns(order.status);
+  }
+
+  const showDisputeCard = order.status === 'submitted' && dispute?.status === 'raised';
 
   return (
     <ScrollView className={styles.pageWrap} scrollY>
@@ -156,6 +263,27 @@ const OrderDetailPage: React.FC = () => {
         <Text className={styles.statusTitle}>{sc.title}</Text>
         <Text className={styles.statusDesc}>{sc.desc}</Text>
       </View>
+
+      {showDisputeCard && (
+        <View style={{
+          margin: '24rpx 32rpx 0',
+          padding: '24rpx 28rpx',
+          background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+          borderRadius: '16rpx',
+          boxShadow: '0 8rpx 24rpx rgba(239, 68, 68, 0.25)',
+        }}>
+          <View style={{ display: 'flex', alignItems: 'center', gap: '12rpx', marginBottom: '12rpx' }}>
+            <Text style={{ fontSize: '32rpx' }}>⚠️</Text>
+            <Text style={{ fontSize: '30rpx', fontWeight: 'bold', color: '#fff' }}>农户已提出异议</Text>
+            <Text style={{ fontSize: '22rpx', color: 'rgba(255,255,255,0.85)', marginLeft: 'auto' }}>
+              {dispute?.createdAt?.slice(5, 16) || ''}
+            </Text>
+          </View>
+          <Text style={{ fontSize: '26rpx', color: 'rgba(255,255,255,0.95)', lineHeight: '1.6' }}>
+            {safeStr(dispute?.content, '待协调员处理')}
+          </Text>
+        </View>
+      )}
 
       <View className={styles.timelineWrap}>
         {timeline.map((t, i) => (

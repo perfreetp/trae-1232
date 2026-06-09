@@ -13,10 +13,19 @@ const defaultTags = [
   '价格公道', '技术专业', '沟通顺畅', '推荐使用'
 ];
 
+const methodLabels: Record<string, string> = {
+  wechat: '微信',
+  alipay: '支付宝',
+  cash: '现金',
+  card: '银行卡',
+  bank: '银行转账',
+  other: '其他'
+};
+
 const SettlementPage: React.FC = () => {
   const router = useRouter();
   const { currentRole } = useUserStore();
-  const { getOrder, updateOrder } = useAppStore();
+  const { getOrder, updateOrder, addPayment } = useAppStore();
   const order = getOrder(router.params.id) || useAppStore.getState().orders[useAppStore.getState().orders.length - 1];
 
   const fin = useMemo(() => calcOrderFinance(order), [order]);
@@ -63,6 +72,11 @@ const SettlementPage: React.FC = () => {
   const [paid, setPaid] = useState(order?.status === 'settled');
   const [reviewSubmitted, setReviewSubmitted] = useState(!!order?.evaluation);
 
+  const repayProgress = useMemo(() => {
+    if (fin.debtAmount <= 0) return 100;
+    return Math.min(100, Math.round((fin.totalPaid / fin.debtAmount) * 100));
+  }, [fin.debtAmount, fin.totalPaid]);
+
   const toggleTag = (t: string) => {
     setTags(tags.includes(t) ? tags.filter(x => x !== t) : [...tags, t]);
   };
@@ -85,6 +99,14 @@ const SettlementPage: React.FC = () => {
     setTimeout(() => {
       Taro.hideLoading();
       setPaid(true);
+      if (fin.debtAmount > 0 && fin.actualPaid > 0) {
+        addPayment(order.id, {
+          amount: fin.actualPaid,
+          method: payMethod as any,
+          paidAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+          paidBy: order.farmerName
+        });
+      }
       updateOrder(order.id, {
         status: 'settled',
         settledAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
@@ -127,6 +149,8 @@ const SettlementPage: React.FC = () => {
     );
   }
 
+  const payments = order.payments ?? [];
+
   return (
     <ScrollView className={styles.pageWrap} scrollY>
       <View className={styles.header}>
@@ -145,6 +169,80 @@ const SettlementPage: React.FC = () => {
               <Text className={styles.successTitle}>支付成功</Text>
               <Text className={styles.successDesc}>款项已转入机手账户，感谢使用小麦抢收服务！</Text>
             </View>
+          </View>
+        ) : null}
+
+        <View className={styles.finOverviewCard}>
+          <View className={styles.finOverviewItem}>
+            <View className={styles.finIconWrap} style={{ background: 'rgba(245, 158, 11, 0.12)' }}>
+              <Text className={styles.finIcon}>📋</Text>
+            </View>
+            <Text className={styles.finAmount} style={{ color: '#EA580C' }}>{formatMoney(fin.totalPayable)}</Text>
+            <Text className={styles.finLabel}>应收总额</Text>
+          </View>
+          <View className={styles.finOverviewItem}>
+            <View className={styles.finIconWrap} style={{ background: 'rgba(16, 185, 129, 0.12)' }}>
+              <Text className={styles.finIcon}>✅</Text>
+            </View>
+            <Text className={styles.finAmount} style={{ color: '#059669' }}>{formatMoney(fin.totalPaid)}</Text>
+            <Text className={styles.finLabel}>已付金额</Text>
+          </View>
+          <View className={styles.finOverviewItem}>
+            <View className={styles.finIconWrap} style={{ background: 'rgba(239, 68, 68, 0.12)' }}>
+              <Text className={styles.finIcon}>⏳</Text>
+            </View>
+            <Text className={styles.finAmount} style={{ color: '#DC2626' }}>{formatMoney(fin.remainingDebt)}</Text>
+            <Text className={styles.finLabel}>待付金额</Text>
+          </View>
+        </View>
+
+        {fin.debtAmount > 0 ? (
+          <View className={styles.card}>
+            <View className={styles.cardHeader}>
+              <Text className={styles.cardHeaderIcon}>📊</Text>
+              <Text className={styles.cardHeaderTitle}>还款状态</Text>
+            </View>
+            <View className={styles.progressWrap}>
+              <View className={styles.progressBar}>
+                <View
+                  className={styles.progressFill}
+                  style={{ width: `${repayProgress}%` }}
+                />
+              </View>
+              <View className={styles.progressInfo}>
+                <Text className={styles.progressPercent}>还款进度 {repayProgress}%</Text>
+                <Text className={styles.progressDetail}>
+                  已付 {formatMoney(fin.totalPaid)} / 欠款 {formatMoney(fin.debtAmount)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : null}
+
+        {fin.debtAmount > 0 ? (
+          <View className={styles.card}>
+            <View className={styles.cardHeader}>
+              <Text className={styles.cardHeaderIcon}>💳</Text>
+              <Text className={styles.cardHeaderTitle}>还款记录</Text>
+            </View>
+            {payments.length > 0 ? (
+              <View className={styles.paymentList}>
+                {payments.map(p => (
+                  <View key={p.id} className={styles.paymentItem}>
+                    <View className={styles.paymentInfo}>
+                      <Text className={styles.paymentAmount}>{formatMoney(p.amount)}</Text>
+                      <Text className={styles.paymentMeta}>
+                        {methodLabels[p.method] || p.method} · {p.paidAt}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View className={styles.emptyPayment}>
+                <Text className={styles.emptyText}>暂无还款记录</Text>
+              </View>
+            )}
           </View>
         ) : null}
 

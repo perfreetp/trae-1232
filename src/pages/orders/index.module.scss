@@ -91,3 +91,33 @@
   font-size: 20rpx;
   color: $color-text-tertiary;
 }
+
+.filterBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm $page-padding;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(139, 92, 246, 0.05));
+  border-bottom: 2rpx solid rgba(124, 58, 237, 0.15);
+  padding-top: calc(env(safe-area-inset-top) + $spacing-sm);
+}
+
+.filterBarText {
+  font-size: $font-size-xs;
+  color: $color-dispatch-purple;
+  font-weight: $font-weight-medium;
+  flex: 1;
+}
+
+.filterClear {
+  padding: 8rpx 20rpx;
+  background: rgba(124, 58, 237, 0.15);
+  border-radius: $radius-button;
+  margin-left: $spacing-sm;
+}
+
+.filterClearText {
+  font-size: 22rpx;
+  color: $color-dispatch-purple;
+  font-weight: $font-weight-semibold;
+}

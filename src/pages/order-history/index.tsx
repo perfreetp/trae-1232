@@ -7,6 +7,16 @@ import { useAppStore } from '../../store/appStore';
 import { useUserStore } from '../../store/userStore';
 import { calcOrderFinance, formatMoney, formatArea } from '../../utils/orderFinance';
 
+type DebtFilter = 'all' | 'none' | 'hasDebt' | 'partial' | 'cleared';
+
+const DEBT_FILTER_TABS: { key: DebtFilter; label: string }[] = [
+  { key: 'all', label: '全部' },
+  { key: 'none', label: '无欠款' },
+  { key: 'hasDebt', label: '有欠款' },
+  { key: 'partial', label: '部分还款' },
+  { key: 'cleared', label: '欠款已清' },
+];
+
 const OrderHistoryPage: React.FC = () => {
   const { currentRole, user } = useUserStore();
   const { orders: allOrders } = useAppStore();
@@ -38,31 +48,45 @@ const OrderHistoryPage: React.FC = () => {
 
   const [year, setYear] = useState<string>(years[0]);
   const [keyword, setKeyword] = useState('');
+  const [debtFilter, setDebtFilter] = useState<DebtFilter>('all');
 
-  const yearFiltered = useMemo(() => {
-    return settledOrders.filter(o => {
-      if (!o.settledAt) return false;
-      return o.settledAt.startsWith(year);
-    });
-  }, [settledOrders, year]);
-
-  const filteredOrders = useMemo(() => {
-    if (!keyword) return yearFiltered;
-    const kw = keyword.toLowerCase();
-    return yearFiltered.filter(o =>
-      o.plot.address.toLowerCase().includes(kw) ||
-      o.farmerName.toLowerCase().includes(kw) ||
-      o.operatorName.toLowerCase().includes(kw) ||
-      o.id.toLowerCase().includes(kw)
-    );
-  }, [yearFiltered, keyword]);
-
-  const orders = useMemo(() => {
-    return filteredOrders.map(o => ({
+  const ordersWithFin = useMemo(() => {
+    return settledOrders.map(o => ({
       ...o,
       fin: calcOrderFinance(o),
     }));
-  }, [filteredOrders]);
+  }, [settledOrders]);
+
+  const orders = useMemo(() => {
+    return ordersWithFin.filter(o => {
+      if (!o.settledAt) return false;
+      if (!o.settledAt.startsWith(year)) return false;
+
+      if (keyword) {
+        const kw = keyword.toLowerCase();
+        const match =
+          o.plot.address.toLowerCase().includes(kw) ||
+          o.farmerName.toLowerCase().includes(kw) ||
+          o.operatorName.toLowerCase().includes(kw) ||
+          o.id.toLowerCase().includes(kw);
+        if (!match) return false;
+      }
+
+      switch (debtFilter) {
+        case 'none':
+          return o.fin.debtAmount === 0 && o.fin.debtStatus === 'none';
+        case 'hasDebt':
+          return o.fin.debtStatus === 'full' || o.fin.debtStatus === 'partial';
+        case 'partial':
+          return o.fin.debtStatus === 'partial';
+        case 'cleared':
+          return o.fin.debtAmount > 0 && o.fin.debtStatus === 'none';
+        case 'all':
+        default:
+          return true;
+      }
+    });
+  }, [ordersWithFin, year, keyword, debtFilter]);
 
   const totalArea = useMemo(() => orders.reduce((s, o) => s + o.fin.actualArea, 0), [orders]);
   const totalAmount = useMemo(() => orders.reduce((s, o) => s + o.fin.totalPayable, 0), [orders]);
@@ -94,6 +118,29 @@ const OrderHistoryPage: React.FC = () => {
     return num ? num.padStart(6, '0') : id.toUpperCase();
   };
 
+  const renderDebtBadge = (o: typeof ordersWithFin[0]) => {
+    const { debtStatus, remainingDebt, debtAmount } = o.fin;
+    if (debtStatus === 'none' || debtAmount === 0) {
+      return (
+        <View className={classnames(styles.debtBadge, styles.badgeGreen)}>
+          <Text className={styles.badgeText}>已结清</Text>
+        </View>
+      );
+    }
+    if (debtStatus === 'full') {
+      return (
+        <View className={classnames(styles.debtBadge, styles.badgeRed)}>
+          <Text className={styles.badgeText}>全额欠款</Text>
+        </View>
+      );
+    }
+    return (
+      <View className={classnames(styles.debtBadge, styles.badgeYellow)}>
+        <Text className={styles.badgeText}>部分还款 {formatMoney(remainingDebt)}</Text>
+      </View>
+    );
+  };
+
   return (
     <ScrollView className={styles.pageWrap} scrollY>
       <View className={styles.header}>
@@ -117,6 +164,17 @@ const OrderHistoryPage: React.FC = () => {
               onClick={() => setYear(y)}
             >
               <Text className={styles.yearText}>{y}年麦收</Text>
+            </View>
+          ))}
+        </ScrollView>
+        <ScrollView className={styles.debtTabs} scrollX style={{ display: 'flex', gap: 8, overflow: 'auto', marginTop: 12 }}>
+          {DEBT_FILTER_TABS.map(tab => (
+            <View
+              key={tab.key}
+              className={classnames(styles.debtTab, debtFilter === tab.key && styles.debtTabActive)}
+              onClick={() => setDebtFilter(tab.key)}
+            >
+              <Text className={classnames(styles.debtTabText, debtFilter === tab.key && styles.debtTabTextActive)}>{tab.label}</Text>
             </View>
           ))}
         </ScrollView>
@@ -160,7 +218,7 @@ const OrderHistoryPage: React.FC = () => {
                 <Text className={styles.plotDetail}>🌾 {formatArea(o.fin.actualArea)} 亩 · ¥{o.fin.unitPrice}/亩 · {o.machineName}</Text>
               </View>
               <View className={styles.priceCol}>
-                <Text className={styles.price}>{o.fin.debtAmount > 0 ? formatMoney(o.fin.actualPaid) : formatMoney(o.fin.totalPayable)}</Text>
+                <Text className={styles.price}>{formatMoney(o.fin.totalPayable)}</Text>
               </View>
             </View>
             <View className={styles.orderBottom}>
@@ -172,24 +230,27 @@ const OrderHistoryPage: React.FC = () => {
                     : `农户 ${o.farmerName} · ${o.farmerPhone}`}
                 </Text>
               </View>
-              <View className={styles.actionBtns}>
-                <View
-                  className={styles.ghostBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCall(currentRole === 'farmer' ? o.operatorPhone : o.farmerPhone);
-                  }}
-                >
-                  <Text className={styles.ghostBtnText}>📞 联系</Text>
-                </View>
-                <View
-                  className={styles.primaryBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReorder();
-                  }}
-                >
-                  <Text className={styles.primaryBtnText}>🌾 再来一单</Text>
+              <View className={styles.rightBottom}>
+                {renderDebtBadge(o)}
+                <View className={styles.actionBtns}>
+                  <View
+                    className={styles.ghostBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCall(currentRole === 'farmer' ? o.operatorPhone : o.farmerPhone);
+                    }}
+                  >
+                    <Text className={styles.ghostBtnText}>📞 联系</Text>
+                  </View>
+                  <View
+                    className={styles.primaryBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReorder();
+                    }}
+                  >
+                    <Text className={styles.primaryBtnText}>🌾 再来一单</Text>
+                  </View>
                 </View>
               </View>
             </View>

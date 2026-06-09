@@ -227,3 +227,114 @@
   .primary &, .secondary & { color: $color-text-white; }
   .ghost & { color: $color-text-secondary; }
 }
+
+.finOverviewCard {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg $spacing-md;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-sm;
+}
+.finOverviewItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+.finIconWrap {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4rpx;
+}
+.finIcon {
+  font-size: 36rpx;
+  line-height: 1;
+}
+.finAmount {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  font-family: 'DIN Alternate', sans-serif;
+  line-height: 1.2;
+}
+.finLabel {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-medium;
+}
+
+.progressWrap {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+.progressBar {
+  width: 100%;
+  height: 16rpx;
+  background: $color-bg-hover;
+  border-radius: 999rpx;
+  overflow: hidden;
+}
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-secondary, $color-secondary-light);
+  border-radius: 999rpx;
+  transition: width 0.5s ease;
+}
+.progressInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.progressPercent {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-dark;
+}
+.progressDetail {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.paymentList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+.paymentItem {
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+}
+.paymentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.paymentAmount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  font-family: 'DIN Alternate', sans-serif;
+}
+.paymentMeta {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.emptyPayment {
+  padding: $spacing-xl $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.emptyText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}

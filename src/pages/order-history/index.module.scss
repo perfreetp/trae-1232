@@ -80,6 +80,35 @@
   }
 }
 
+.debtTabs {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.debtTab {
+  padding: 10rpx 22rpx;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+  border: 2rpx solid $color-divider;
+  white-space: nowrap;
+
+  &.debtTabActive {
+    background: rgba(124, 58, 237, 0.1);
+    border-color: $color-dispatch-purple;
+  }
+}
+
+.debtTabText {
+  font-size: 22rpx;
+  color: $color-text-secondary;
+
+  &.debtTabTextActive {
+    color: $color-dispatch-purple;
+    font-weight: $font-weight-semibold;
+  }
+}
+
 .content {
   padding: $spacing-lg $page-padding;
 }
@@ -181,7 +210,51 @@
 .orderBottom {
   display: flex;
   justify-content: space-between;
+  align-items: flex-end;
+}
+
+.rightBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $spacing-sm;
+}
+
+.debtBadge {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-xs;
+  display: inline-flex;
   align-items: center;
+}
+
+.badgeGreen {
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.badgeRed {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.badgeYellow {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.badgeText {
+  font-size: 20rpx;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+}
+
+.badgeGreen .badgeText {
+  color: $color-secondary-dark;
+}
+
+.badgeRed .badgeText {
+  color: $color-error;
+}
+
+.badgeYellow .badgeText {
+  color: #D97706;
 }
 
 .peerInfo {

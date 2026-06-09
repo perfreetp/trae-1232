@@ -384,3 +384,459 @@
   color: $color-text-secondary;
   line-height: 1.7;
 }
+
+.progressBoard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border: 2rpx solid rgba(124, 58, 237, 0.15);
+}
+
+.progressBoardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.progressBoardTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.progressBoardIcon {
+  font-size: 28rpx;
+}
+
+.progressBoardTitleText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.progressBoardSubtitle {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.progressBoardBody {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.villageRow {
+  background: rgba(124, 58, 237, 0.04);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.villageRowHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.villageName {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-dispatch-purple;
+}
+
+.villageTotal {
+  font-size: 20rpx;
+  color: $color-text-secondary;
+}
+
+.villageStatusRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-xs;
+}
+
+.statusCell {
+  background: $color-bg-card;
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-xs;
+  border-left: 6rpx solid #8B5CF6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rpx;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.97);
+    background: $color-bg-hover;
+  }
+}
+
+.statusLabel {
+  font-size: 20rpx;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+}
+
+.statusCount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+
+  &.clickable {
+    cursor: pointer;
+  }
+}
+
+.statusArea {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.queueTabsBar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.queueTab {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: 12rpx 24rpx;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  border: 2rpx solid $color-divider;
+  position: relative;
+  transition: all $transition-base;
+
+  &.active {
+    background: linear-gradient(135deg, $color-dispatch-purple, #8B5CF6);
+    border-color: transparent;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.queueTabIcon {
+  font-size: 24rpx;
+}
+
+.queueTabText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+
+  .active & {
+    color: $color-text-white;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  border-radius: 16rpx;
+  background: $color-error;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeText {
+  font-size: 20rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+
+.disputeItem {
+  background: $color-bg-card;
+  border: 2rpx solid rgba(239, 68, 68, 0.2);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.disputeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.disputeFarmer {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.disputeTag {
+  padding: 4rpx 14rpx;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: $radius-xs;
+}
+
+.disputeTagText {
+  font-size: 20rpx;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}
+
+.disputeMeta {
+  display: flex;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.disputeMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.disputeAreaDiff {
+  color: $color-error;
+  font-size: 20rpx;
+}
+
+.disputeContent {
+  background: rgba(245, 158, 11, 0.06);
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.disputeContentLabel {
+  font-size: 22rpx;
+  color: $color-primary-dark;
+  font-weight: $font-weight-medium;
+}
+
+.disputeContentText {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-top: 4rpx;
+}
+
+.disputeFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.disputeTime {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.mediateBtn {
+  padding: 12rpx 32rpx;
+  background: linear-gradient(135deg, #F59E0B, #EF4444);
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.mediateBtnText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.emptyDispute {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 60rpx $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.emptyDisputeIcon {
+  font-size: 64rpx;
+}
+
+.emptyDisputeText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.modalMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.modalWrap {
+  width: 100%;
+  max-width: 640rpx;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg;
+  border-bottom: 2rpx solid $color-divider;
+}
+
+.modalTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.modalClose {
+  font-size: 40rpx;
+  color: $color-text-tertiary;
+  line-height: 1;
+  padding: 0 8rpx;
+}
+
+.modalBody {
+  padding: $spacing-lg;
+}
+
+.modalOrderInfo {
+  display: flex;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+  font-size: $font-size-xs;
+  line-height: 1.5;
+}
+
+.modalOrderLabel {
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.modalOrderValue {
+  color: $color-text-secondary;
+  flex: 1;
+}
+
+.modalSectionTitle {
+  margin-top: $spacing-md;
+  margin-bottom: $spacing-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.resolutionOptions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.resolutionOption {
+  padding: $spacing-md $spacing-lg;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background: rgba(124, 58, 237, 0.1);
+    border-color: $color-dispatch-purple;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.resolutionOptionTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.resolutionOptionDesc {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.noteInput {
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  min-height: 100rpx;
+}
+
+.noteInputPlaceholder {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.5;
+}
+
+.modalFooter {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg $spacing-lg;
+  border-top: 2rpx solid $color-divider;
+}
+
+.modalBtn {
+  flex: 1;
+  padding: $spacing-md;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  &.cancel {
+    background: $color-bg-hover;
+  }
+
+  &.confirm {
+    background: linear-gradient(135deg, $color-dispatch-purple, #8B5CF6);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.modalBtnText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+
+  .cancel & {
+    color: $color-text-secondary;
+  }
+
+  .confirm & {
+    color: $color-text-white;
+  }
+}
