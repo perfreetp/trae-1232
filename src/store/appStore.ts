@@ -29,7 +29,9 @@ function calcDebtStatus(order: Order): DebtStatus {
 
 interface OrderFilters {
   status: OrderStatus | 'all';
+  statuses: OrderStatus[];
   village: string;
+  group: string;
 }
 
 interface AppState {
@@ -72,13 +74,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   queue: JSON.parse(JSON.stringify(mockQueue)),
   dryingFields: JSON.parse(JSON.stringify(mockDryingFields)),
   notices: JSON.parse(JSON.stringify(mockNotices)),
-  orderFilters: { status: 'all', village: '' },
+  orderFilters: { status: 'all', statuses: [], village: '', group: '' },
 
   setOrderFilters: (filters) => {
     set({ orderFilters: { ...get().orderFilters, ...filters } });
   },
   clearOrderFilters: () => {
-    set({ orderFilters: { status: 'all', village: '' } });
+    set({ orderFilters: { status: 'all', statuses: [], village: '', group: '' } });
   },
 
   refreshQueueRank: () => {
@@ -306,11 +308,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     const order = get().getOrder(orderId);
     if (!order) return;
     const now = nowStr();
-    const fin = {
-      totalPayable: (order.totalAmount ?? 0),
-      debt: order.workRecord?.debtAmount ?? 0
-    };
-    const payNow = Math.max(0, fin.totalPayable - fin.debt);
+    const debt = order.workRecord?.debtAmount ?? 0;
+    const totalPaidOld = (order.payments ?? []).reduce((s, p) => s + p.amount, 0);
+    const totalPayable = (order.totalAmount ?? 0);
+    // 本次实付：无欠款时 付全额；有欠款时 付(总额-欠款) 先结清主要费用
+    const payNow = debt <= 0 ? totalPayable : Math.max(0, totalPayable - debt - totalPaidOld);
     const payments = [...(order.payments ?? [])];
     if (payNow > 0) {
       payments.push({
@@ -322,9 +324,14 @@ export const useAppStore = create<AppState>((set, get) => ({
         paidBy: order.farmerName
       });
     }
+    const totalPaid = payments.reduce((s, p) => s + p.amount, 0);
+    const remainingDebt = Math.max(0, debt - totalPaid);
+    // 只有 remainingDebt === 0 才真正 settled，否则保持 confirmed
+    const newStatus = remainingDebt <= 0 ? 'settled' : 'confirmed';
+
     get().updateOrder(orderId, {
-      status: 'settled',
-      settledAt: now,
+      status: newStatus,
+      settledAt: newStatus === 'settled' ? now : undefined,
       paymentMethod: method,
       payments
     });

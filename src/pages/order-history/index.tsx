@@ -23,7 +23,10 @@ const OrderHistoryPage: React.FC = () => {
 
   const settledOrders = useMemo(() => {
     return allOrders.filter(o => {
-      if (o.status !== 'settled') return false;
+      const finished = o.status === 'settled'
+        || (o.status === 'confirmed' && o.workRecord)
+        || (o.status === 'submitted' && o.workRecord);
+      if (!finished) return false;
       if (!user) return false;
       if (currentRole === 'farmer') {
         return o.farmerId === user.id;
@@ -37,8 +40,11 @@ const OrderHistoryPage: React.FC = () => {
   const years = useMemo(() => {
     const yearSet = new Set<string>();
     settledOrders.forEach(o => {
-      if (o.settledAt) {
-        yearSet.add(o.settledAt.slice(0, 4));
+      const dateStr = o.settledAt
+        || o.workRecord?.completedAt
+        || o.createdAt;
+      if (dateStr) {
+        yearSet.add(dateStr.slice(0, 4));
       }
     });
     const yearArr = Array.from(yearSet);
@@ -59,8 +65,11 @@ const OrderHistoryPage: React.FC = () => {
 
   const orders = useMemo(() => {
     return ordersWithFin.filter(o => {
-      if (!o.settledAt) return false;
-      if (!o.settledAt.startsWith(year)) return false;
+      const dateStr = o.settledAt
+        || o.workRecord?.completedAt
+        || o.createdAt;
+      if (!dateStr) return false;
+      if (!dateStr.startsWith(year)) return false;
 
       if (keyword) {
         const kw = keyword.toLowerCase();

@@ -60,32 +60,36 @@ const DispatchPage: React.FC = () => {
 
   const villageStats = useMemo(() => {
     const stats: Record<string, Record<ProgressStatus, { count: number; area: number }>> = {};
-    villages.filter(v => v.key !== 'all').forEach(v => {
-      stats[v.key] = {
-        queuing: { count: 0, area: 0 },
-        working: { count: 0, area: 0 },
-        submitted: { count: 0, area: 0 },
-        settled: { count: 0, area: 0 },
-      };
-    });
-
     orders.forEach(order => {
       const v = order.plot?.village;
-      if (!v || !stats[v]) return;
+      const g = order.plot?.group || '';
+      if (!v) return;
       let targetStatus: ProgressStatus | null = null;
       (Object.keys(progressStatusMap) as ProgressStatus[]).forEach(key => {
         if (progressStatusMap[key].statuses.includes(order.status)) {
           targetStatus = key;
         }
       });
-      if (targetStatus) {
-        stats[v][targetStatus].count += 1;
-        stats[v][targetStatus].area += order.area;
+      if (!targetStatus) return;
+      const key = g ? `${v}|${g}` : v;
+      if (!stats[key]) {
+        stats[key] = {
+          queuing: { count: 0, area: 0 },
+          working: { count: 0, area: 0 },
+          submitted: { count: 0, area: 0 },
+          settled: { count: 0, area: 0 },
+        };
       }
+      stats[key][targetStatus].count += 1;
+      stats[key][targetStatus].area += (order.workRecord?.actualArea ?? order.area);
     });
 
     return stats;
   }, [orders]);
+
+  const boardGroupedKeys = useMemo(() => {
+    return Object.keys(villageStats).sort();
+  }, [villageStats]);
 
   const filteredQueue = village === 'all'
     ? queue
@@ -119,14 +123,19 @@ const DispatchPage: React.FC = () => {
     Taro.showToast({ title: item?.priority ? '已取消优先' : '已设为优先', icon: 'success' });
   };
 
-  const handleJumpToOrders = (villageKey: string, status: ProgressStatus) => {
+  const handleJumpToOrders = (
+    villageKey: string, status: ProgressStatus, groupVal?: string
+  ) => {
     const statusInfo = progressStatusMap[status];
     setOrderFilters({
       status: statusInfo.statuses[0],
-      village: villageKey
+      statuses: statusInfo.statuses,
+      village: villageKey,
+      group: groupVal || ''
     });
+    const groupText = groupVal ? ` ${groupVal}` : '';
     Taro.showToast({
-      title: `已筛选：${villageKey} ${statusInfo.label}`,
+      title: `已筛选：${villageKey}${groupText} ${statusInfo.label}`,
       icon: 'none',
       duration: 1500
     });
@@ -201,29 +210,33 @@ const DispatchPage: React.FC = () => {
               <Text className={styles.progressBoardSubtitle}>按村组统计 · 点击可跳转筛选</Text>
             </View>
             <View className={styles.progressBoardBody}>
-              {villages.filter(v => v.key !== 'all').map(v => {
-                const vs = villageStats[v.key];
+              {boardGroupedKeys.map(key => {
+                const parts = key.split('|');
+                const villageName = parts[0];
+                const groupName = parts[1] || '';
+                const vs = villageStats[key];
                 const villageTotal = (Object.keys(vs) as ProgressStatus[])
                   .reduce((s, k) => s + vs[k].count, 0);
+                const displayName = groupName ? `${villageName}${groupName}` : villageName;
                 return (
-                  <View key={v.key} className={styles.villageRow}>
+                  <View key={key} className={styles.villageRow}>
                     <View className={styles.villageRowHeader}>
-                      <Text className={styles.villageName}>{v.label}</Text>
+                      <Text className={styles.villageName}>{displayName}</Text>
                       <Text className={styles.villageTotal}>{villageTotal}单 · {
                         (Object.keys(vs) as ProgressStatus[])
                           .reduce((s, k) => s + vs[k].area, 0).toFixed(1)
                       }亩</Text>
                     </View>
                     <View className={styles.villageStatusRow}>
-                      {(Object.keys(progressStatusMap) as ProgressStatus[]).map(key => {
-                        const info = progressStatusMap[key];
-                        const data = vs[key];
+                      {(Object.keys(progressStatusMap) as ProgressStatus[]).map(pkey => {
+                        const info = progressStatusMap[pkey];
+                        const data = vs[pkey];
                         return (
                           <View
-                            key={key}
+                            key={pkey}
                             className={styles.statusCell}
                             style={{ borderLeftColor: info.color }}
-                            onClick={() => data.count > 0 && handleJumpToOrders(v.key, key)}
+                            onClick={() => data.count > 0 && handleJumpToOrders(villageName, pkey, groupName)}
                           >
                             <Text className={styles.statusLabel} style={{ color: info.color }}>
                               {info.label}

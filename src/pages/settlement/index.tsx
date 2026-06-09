@@ -25,7 +25,7 @@ const methodLabels: Record<string, string> = {
 const SettlementPage: React.FC = () => {
   const router = useRouter();
   const { currentRole } = useUserStore();
-  const { getOrder, updateOrder, addPayment } = useAppStore();
+  const { getOrder, updateOrder, addPayment, settleOrder } = useAppStore();
   const order = getOrder(router.params.id) || useAppStore.getState().orders[useAppStore.getState().orders.length - 1];
 
   const fin = useMemo(() => calcOrderFinance(order), [order]);
@@ -99,17 +99,17 @@ const SettlementPage: React.FC = () => {
     setTimeout(() => {
       Taro.hideLoading();
       setPaid(true);
-      if (fin.debtAmount > 0 && fin.actualPaid > 0) {
+      if (fin.debtAmount > 0 && fin.actualPaid > 0 && fin.status !== 'settled') {
         addPayment(order.id, {
           amount: fin.actualPaid,
           method: payMethod as any,
           paidAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
           paidBy: order.farmerName
         });
+      } else {
+        settleOrder(order.id, payMethod);
       }
       updateOrder(order.id, {
-        status: 'settled',
-        settledAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
         paymentMethod: payMethod,
         totalAmount: fin.totalPayable
       } as any);

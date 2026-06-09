@@ -28,24 +28,34 @@ const OrdersPage: React.FC = () => {
   const clearOrderFilters = useAppStore(s => s.clearOrderFilters);
   const refreshQueueRank = useAppStore(s => s.refreshQueueRank);
   const [tab, setTab] = useState<TabType>('all');
-  const [appliedFilters, setAppliedFilters] = useState<{ status: TabType; village: string }>({ status: 'all', village: '' });
+  const [appliedFilters, setAppliedFilters] = useState<{
+    status: TabType; statuses: OrderStatus[]; village: string; group: string;
+  }>({ status: 'all', statuses: [], village: '', group: '' });
 
   useDidShow(() => {
-    if (orderFilters.status !== 'all' || orderFilters.village !== '') {
+    if (
+      orderFilters.status !== 'all'
+      || orderFilters.village !== ''
+      || orderFilters.statuses.length > 0
+      || orderFilters.group !== ''
+    ) {
       setTab(orderFilters.status as TabType);
       setAppliedFilters({
         status: orderFilters.status as TabType,
-        village: orderFilters.village
+        statuses: orderFilters.statuses,
+        village: orderFilters.village,
+        group: orderFilters.group
       });
       const villageText = orderFilters.village ? ` · ${orderFilters.village}` : '';
-      const statusLabel = statusTabs.find(t => t.key === orderFilters.status)?.label || '';
-      if (orderFilters.status !== 'all' || orderFilters.village) {
-        Taro.showToast({
-          title: `已筛选：${statusLabel || '全部'}${villageText}`,
-          icon: 'none',
-          duration: 2000
-        });
-      }
+      const groupText = orderFilters.group ? ` ${orderFilters.group}` : '';
+      let statusLabel = orderFilters.statuses.length > 0
+        ? orderFilters.statuses.map(s => statusTabs.find(t => t.key === s)?.label || '').join('+')
+        : statusTabs.find(t => t.key === orderFilters.status)?.label || '';
+      Taro.showToast({
+        title: `已筛选：${statusLabel || '全部'}${villageText}${groupText}`,
+        icon: 'none',
+        duration: 2000
+      });
     }
   });
 
@@ -62,11 +72,16 @@ const OrdersPage: React.FC = () => {
   const filteredOrders = useMemo(() => {
     let result = myOrders;
     const activeTab = appliedFilters.status !== 'all' ? appliedFilters.status : tab;
-    if (activeTab !== 'all') {
+    if (appliedFilters.statuses?.length > 0) {
+      result = result.filter(o => appliedFilters.statuses.includes(o.status));
+    } else if (activeTab !== 'all') {
       result = result.filter(o => o.status === activeTab);
     }
     if (appliedFilters.village) {
       result = result.filter(o => o.plot?.village === appliedFilters.village);
+    }
+    if (appliedFilters.group) {
+      result = result.filter(o => (o.plot?.group || '') === appliedFilters.group);
     }
     return result;
   }, [myOrders, tab, appliedFilters]);
@@ -85,11 +100,14 @@ const OrdersPage: React.FC = () => {
     .filter(o => o.status === 'settled')
     .reduce((s, o) => s + o.area, 0);
 
-  const hasFilter = appliedFilters.status !== 'all' || appliedFilters.village !== '';
+  const hasFilter = appliedFilters.status !== 'all'
+    || appliedFilters.village !== ''
+    || appliedFilters.statuses.length > 0
+    || appliedFilters.group !== '';
 
   const handleClearFilters = () => {
     clearOrderFilters();
-    setAppliedFilters({ status: 'all', village: '' });
+    setAppliedFilters({ status: 'all', statuses: [], village: '', group: '' });
     setTab('all');
     Taro.showToast({ title: '已清除筛选', icon: 'success' });
   };
@@ -110,9 +128,11 @@ const OrdersPage: React.FC = () => {
         <View className={styles.filterBar}>
           <Text className={styles.filterBarText}>
             🎯 当前筛选：
-            {appliedFilters.status !== 'all' && statusTabs.find(t => t.key === appliedFilters.status)?.label}
-            {appliedFilters.status !== 'all' && appliedFilters.village && ' · '}
-            {appliedFilters.village}
+            {appliedFilters.statuses.length > 0
+              ? appliedFilters.statuses.map(s => statusTabs.find(t => t.key === s)?.label || '').join(' / ')
+              : (appliedFilters.status !== 'all' ? statusTabs.find(t => t.key === appliedFilters.status)?.label : '全部')}
+            {appliedFilters.village && ` · ${appliedFilters.village}`}
+            {appliedFilters.group && ` ${appliedFilters.group}`}
           </Text>
           <View className={styles.filterClear} onClick={handleClearFilters}>
             <Text className={styles.filterClearText}>清除</Text>
