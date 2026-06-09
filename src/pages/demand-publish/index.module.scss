@@ -1,0 +1,306 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 160rpx);
+}
+
+.content {
+  padding: $spacing-lg $page-padding;
+}
+
+.formCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 2rpx solid $color-divider;
+}
+
+.cardHeaderIcon { font-size: 28rpx; }
+
+.cardHeaderTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.formRow {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md 0;
+
+  &:not(:last-child) {
+    border-bottom: 2rpx solid $color-divider;
+  }
+}
+
+.formLabel {
+  width: 160rpx;
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 64rpx;
+}
+
+.required::before {
+  content: '*';
+  color: $color-error;
+  margin-right: 4rpx;
+}
+
+.formValue {
+  flex: 1;
+  min-width: 0;
+}
+
+.inputBox {
+  height: 64rpx;
+  padding: 0 $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &:active { border-color: rgba(245, 158, 11, 0.4); }
+}
+
+.inputText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.placeholderText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.arrowIcon {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+  margin-left: $spacing-sm;
+}
+
+.textareaBox {
+  min-height: 160rpx;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+}
+
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.radioItem {
+  padding: 12rpx 24rpx;
+  background: $color-bg-page;
+  border-radius: $radius-button;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.06));
+    border-color: rgba(245, 158, 11, 0.5);
+  }
+}
+
+.radioText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+
+  .active & {
+    color: $color-primary-dark;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.timeRange {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.timeItem {
+  flex: 1;
+  height: 64rpx;
+  padding: 0 $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.timeSep {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.maturityBar {
+  display: flex;
+  background: $color-bg-page;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  padding: 6rpx;
+  gap: 6rpx;
+}
+
+.maturityItem {
+  flex: 1;
+  height: 64rpx;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  &.active {
+    box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+  }
+  &.active.m1 { background: $color-maturity-immature; }
+  &.active.m2 { background: $color-maturity-nearly; }
+  &.active.m3 { background: $color-maturity-mature; }
+  &.active.m4 { background: $color-maturity-overripe; }
+}
+
+.maturityText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+
+  .active & {
+    color: $color-text-white;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.summaryCard {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02));
+  border: 2rpx solid rgba(245, 158, 11, 0.2);
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8rpx 0;
+}
+
+.summaryLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.summaryValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.summaryValue.highlight {
+  color: $color-primary-dark;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-md;
+}
+
+.agreeRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-md 0;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
+  border: 2rpx solid $color-text-tertiary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+  transition: all $transition-base;
+
+  &.checked {
+    background: linear-gradient(135deg, $color-primary, $color-primary-light);
+    border-color: transparent;
+  }
+}
+
+.checkIcon {
+  font-size: 18rpx;
+  color: $color-text-white;
+  line-height: 1;
+}
+
+.agreeText {
+  flex: 1;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.agreeLink {
+  color: $color-primary;
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + $spacing-md);
+  background: $color-bg-card;
+  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.06);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 100;
+}
+
+.btn {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active { transform: scale(0.97); }
+
+  &.primary {
+    background: linear-gradient(135deg, $color-primary, $color-primary-light);
+    box-shadow: 0 6rpx 16rpx rgba(245, 158, 11, 0.3);
+  }
+  &.ghost {
+    background: $color-bg-hover;
+  }
+}
+
+.btnText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+  .primary & { color: $color-text-white; }
+  .ghost & { color: $color-text-secondary; }
+}

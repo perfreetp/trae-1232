@@ -1,0 +1,292 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 160rpx);
+}
+
+.statusBar {
+  background: linear-gradient(135deg, $color-primary 0%, #D97706 100%);
+  padding: $spacing-xl $page-padding;
+  padding-top: calc(env(safe-area-inset-top) + 32rpx);
+  color: $color-text-white;
+}
+
+.statusTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: 8rpx;
+}
+
+.statusDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.timelineWrap {
+  margin: -$spacing-md $page-padding 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.timelineItem {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-sm 0;
+
+  &.active .dot {
+    background: $color-primary;
+    box-shadow: 0 0 0 6rpx rgba(245, 158, 11, 0.15);
+  }
+  &.active .timeTitle {
+    color: $color-primary-dark;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.dotLine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 32rpx;
+}
+
+.dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: $color-divider;
+  transition: all $transition-base;
+}
+
+.line {
+  flex: 1;
+  width: 2rpx;
+  background: $color-divider;
+  margin: 4rpx 0;
+  min-height: 24rpx;
+}
+
+.timeBody {
+  flex: 1;
+  padding-bottom: $spacing-sm;
+}
+
+.timeTitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 4rpx;
+}
+
+.timeValue {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.content {
+  padding: $spacing-lg $page-padding;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 2rpx solid $color-divider;
+}
+
+.cardHeaderIcon { font-size: 28rpx; }
+.cardHeaderTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+}
+.cardHeaderAction {
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  padding: 8rpx 0;
+  &:not(:last-child) { border-bottom: 2rpx dashed $color-divider; padding-bottom: $spacing-sm; margin-bottom: $spacing-sm; }
+}
+
+.infoLabel {
+  width: 140rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  line-height: 1.6;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.6;
+  font-weight: $font-weight-medium;
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  padding: $spacing-sm 0;
+}
+
+.priceLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.priceValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.totalRow {
+  border-top: 2rpx solid $color-divider;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-md;
+  .priceLabel { font-size: $font-size-md; color: $color-text-primary; font-weight: $font-weight-semibold; }
+  .priceValue {
+    font-size: $font-size-xxl;
+    color: $color-error;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.debtRow {
+  display: flex;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background: rgba(239, 68, 68, 0.06);
+  border-radius: $radius-md;
+  border: 2rpx solid rgba(239, 68, 68, 0.15);
+  margin-top: $spacing-md;
+}
+
+.debtLabel {
+  font-size: $font-size-sm;
+  color: $color-error;
+  font-weight: $font-weight-semibold;
+}
+
+.debtValue {
+  font-size: $font-size-md;
+  color: $color-error;
+  font-weight: $font-weight-bold;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm;
+}
+
+.photoItem {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: $radius-md;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60rpx;
+}
+
+.photoAdd {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: $radius-md;
+  background: $color-bg-page;
+  border: 2rpx dashed $color-divider;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-tertiary;
+  font-size: 60rpx;
+}
+
+.starRow {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: $spacing-sm 0;
+}
+
+.star {
+  font-size: 36rpx;
+  color: #FCD34D;
+}
+
+.commentText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.7;
+  padding: $spacing-sm 0;
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + $spacing-md);
+  background: $color-bg-card;
+  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.06);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 100;
+}
+
+.btn {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+  &:active { transform: scale(0.97); }
+
+  &.primary {
+    background: linear-gradient(135deg, $color-primary, $color-primary-light);
+    box-shadow: 0 6rpx 16rpx rgba(245, 158, 11, 0.3);
+  }
+  &.secondary {
+    background: $color-secondary;
+    box-shadow: 0 6rpx 16rpx rgba(16, 185, 129, 0.3);
+  }
+  &.outline {
+    background: transparent;
+    border: 2rpx solid $color-primary;
+  }
+  &.ghost {
+    background: $color-bg-hover;
+  }
+}
+
+.btnText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+  .primary &, .secondary & { color: $color-text-white; }
+  .outline & { color: $color-primary; }
+  .ghost & { color: $color-text-secondary; }
+}

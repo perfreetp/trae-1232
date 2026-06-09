@@ -1,0 +1,133 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 160rpx);
+}
+
+.content { padding: $spacing-lg $page-padding; }
+
+.statsCard {
+  background: linear-gradient(135deg, #10B981 0%, #059669 50%, #F59E0B 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  color: $color-text-white;
+  margin-bottom: $spacing-lg;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12rpx 32rpx rgba(16, 185, 129, 0.2);
+}
+.statsPattern {
+  position: absolute;
+  top: -60rpx;
+  right: -40rpx;
+  width: 260rpx;
+  height: 260rpx;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+.statsCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+.statsNum {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+.statsUnit {
+  font-size: 20rpx;
+  opacity: 0.85;
+}
+.statsLabel {
+  font-size: 20rpx;
+  opacity: 0.85;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+.sectionIcon { font-size: 28rpx; }
+
+.addBtn {
+  padding: 12rpx 24rpx;
+  background: linear-gradient(135deg, $color-secondary, $color-secondary-light);
+  border-radius: $radius-button;
+  transition: all $transition-base;
+  &:active { transform: scale(0.96); }
+}
+.addBtnText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.filterBar {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  overflow-x: auto;
+  @include scroll-x-container;
+}
+.filterItem {
+  @include scroll-x-item(auto);
+  padding: 12rpx 24rpx;
+  border-radius: $radius-button;
+  background: $color-bg-card;
+  border: 2rpx solid transparent;
+  white-space: nowrap;
+  transition: all $transition-base;
+  &.active {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+}
+.filterText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  .active & {
+    color: $color-secondary-dark;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.fabBtn {
+  position: fixed;
+  right: $page-padding;
+  bottom: calc(env(safe-area-inset-bottom) + 160rpx);
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-secondary 0%, $color-secondary-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.4);
+  z-index: 100;
+  transition: all $transition-base;
+  &:active { transform: scale(0.92); }
+}
+.fabIcon {
+  font-size: 44rpx;
+  color: $color-text-white;
+}

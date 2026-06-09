@@ -1,0 +1,70 @@
+@use '@/styles/variables.scss' as *;
+
+.switcher {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  box-shadow: $shadow-card;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.roleItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  border: 2rpx solid transparent;
+  background: $color-bg-hover;
+  transition: all $transition-base;
+
+  &.active {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(251, 191, 36, 0.08));
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.roleIcon {
+  font-size: 44rpx;
+  flex-shrink: 0;
+}
+
+.roleInfo {
+  flex: 1;
+}
+
+.roleLabel {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.roleDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.checkMark {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-primary, $color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkIcon {
+  font-size: 24rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-bold;
+}

@@ -1,0 +1,256 @@
+@use '@/styles/variables.scss' as *;
+
+.orderCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.orderNo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.orderNoLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.orderNoValue {
+  font-size: $font-size-sm;
+  font-family: monospace;
+  color: $color-text-secondary;
+}
+
+.statusTag {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-xs;
+
+  &.pending { background: rgba(245, 158, 11, 0.12); .statusText { color: $color-primary-dark; } }
+  &.accepted { background: rgba(59, 130, 246, 0.12); .statusText { color: $color-info; } }
+  &.working { background: rgba(16, 185, 129, 0.12); .statusText { color: $color-secondary-dark; } }
+  &.submitted { background: rgba(124, 58, 237, 0.12); .statusText { color: $color-dispatch-purple; } }
+  &.confirmed { background: rgba(59, 130, 246, 0.12); .statusText { color: $color-info; } }
+  &.settled { background: rgba(107, 114, 128, 0.1); .statusText { color: #6B7280; } }
+}
+
+.statusText {
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
+  line-height: 1;
+}
+
+.plotInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-md 0;
+  border-top: 2rpx solid $color-divider;
+  border-bottom: 2rpx solid $color-divider;
+}
+
+.plotIcon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.plotDetail {
+  flex: 1;
+}
+
+.plotAddr {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 6rpx;
+  @include text-ellipsis;
+}
+
+.plotMeta {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.priorityBadge {
+  flex-shrink: 0;
+  padding: 4rpx 12rpx;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: $radius-xs;
+}
+
+.priorityText {
+  font-size: 20rpx;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+  line-height: 1;
+}
+
+.peopleRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+  padding: $spacing-md 0;
+  border-bottom: 2rpx solid $color-divider;
+}
+
+.peopleItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.peopleLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.peopleName {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+}
+
+.callBtn {
+  font-size: 28rpx;
+  flex-shrink: 0;
+  padding: 4rpx;
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md 0;
+}
+
+.timeIcon {
+  font-size: 24rpx;
+}
+
+.timeLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.timeValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-divider;
+}
+
+.priceInfo {
+  display: flex;
+  align-items: baseline;
+  gap: 4rpx;
+}
+
+.priceLabel {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.priceValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1;
+}
+
+.priceUnit {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-left: 4rpx;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.btn {
+  padding: 12rpx 28rpx;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.btnSuccess {
+  background: linear-gradient(135deg, $color-secondary 0%, $color-secondary-light 100%);
+}
+
+.btnOutline {
+  background: $color-bg-hover;
+  border: 2rpx solid $color-border;
+}
+
+.btnText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.btnTextOutline {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.debtBar {
+  margin-top: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(239, 68, 68, 0.06);
+  border: 2rpx solid rgba(239, 68, 68, 0.15);
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+}
+
+.debtIcon {
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+
+.debtText {
+  flex: 1;
+  font-size: $font-size-xs;
+  color: $color-error;
+  line-height: 1.5;
+}

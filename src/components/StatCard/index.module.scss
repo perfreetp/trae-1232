@@ -1,0 +1,75 @@
+@use '@/styles/variables.scss' as *;
+
+.statCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: $shadow-card-hover;
+  }
+
+  &.color-primary {
+    .icon { color: $color-primary; }
+    .value { color: $color-primary; }
+  }
+  &.color-success {
+    .icon { color: $color-secondary; }
+    .value { color: $color-secondary; }
+  }
+  &.color-warning {
+    .icon { color: $color-warning; }
+    .value { color: $color-warning; }
+  }
+  &.color-error {
+    .icon { color: $color-error; }
+    .value { color: $color-error; }
+  }
+  &.color-info {
+    .icon { color: $color-info; }
+    .value { color: $color-info; }
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.icon {
+  font-size: 32rpx;
+}
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.cardBody {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-xs;
+}
+
+.value {
+  font-size: 44rpx;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.unit {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.trend {
+  display: block;
+  margin-top: $spacing-sm;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

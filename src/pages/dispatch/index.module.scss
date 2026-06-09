@@ -1,0 +1,386 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.header {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.15) 0%, transparent 100%);
+  padding: $spacing-lg $page-padding;
+  padding-top: calc(env(safe-area-inset-top) + 20rpx);
+}
+
+.villageTabs {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  overflow-x: auto;
+  @include scroll-x-container;
+}
+
+.villageTab {
+  @include scroll-x-item(auto);
+  padding: 12rpx 28rpx;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  border: 2rpx solid transparent;
+  white-space: nowrap;
+  transition: all $transition-base;
+
+  &.active {
+    background: linear-gradient(135deg, $color-dispatch-purple, #8B5CF6);
+    border-color: transparent;
+  }
+}
+
+.villageTabText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+
+  .active & {
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.quickStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.quickCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.quickNum {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-dispatch-purple;
+  line-height: 1;
+}
+
+.quickLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.content {
+  padding: $spacing-lg $page-padding;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.sectionTitleIcon {
+  font-size: 28rpx;
+}
+
+.sectionTitleText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 10rpx 20rpx;
+  background: rgba(124, 58, 237, 0.1);
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.actionBtnText {
+  font-size: $font-size-sm;
+  color: $color-dispatch-purple;
+  font-weight: $font-weight-medium;
+}
+
+.queueHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(139, 92, 246, 0.04));
+  border-radius: $radius-lg $radius-lg 0 0;
+  border: 2rpx solid rgba(124, 58, 237, 0.15);
+  border-bottom: none;
+}
+
+.queueHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.queueHeaderIcon {
+  font-size: 24rpx;
+}
+
+.queueHeaderTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-dispatch-purple;
+}
+
+.queueHeaderTip {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.queueItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  border: 2rpx solid $color-divider;
+  border-top: none;
+  transition: all $transition-base;
+
+  &:last-child {
+    border-radius: 0 0 $radius-lg $radius-lg;
+  }
+
+  &.current {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(52, 211, 153, 0.04));
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  &.next {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(251, 191, 36, 0.04));
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.rankNo {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .current & {
+    background: linear-gradient(135deg, $color-secondary, $color-secondary-light);
+  }
+  .next & {
+    background: linear-gradient(135deg, $color-primary, $color-primary-light);
+  }
+}
+
+.rankNoText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-text-secondary;
+
+  .current &, .next & {
+    color: $color-text-white;
+  }
+}
+
+.queueBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.queueTop {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: 8rpx;
+}
+
+.queueName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.priorityTag {
+  padding: 2rpx 10rpx;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: $radius-xs;
+}
+
+.priorityTagText {
+  font-size: 20rpx;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+}
+
+.maturityTag {
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+
+  &.mature {
+    background: rgba(245, 158, 11, 0.1);
+  }
+  &.overripe {
+    background: rgba(239, 68, 68, 0.1);
+  }
+}
+
+.maturityTagText {
+  font-size: 20rpx;
+  line-height: 1.4;
+  font-weight: $font-weight-medium;
+
+  .mature & { color: $color-primary-dark; }
+  .overripe & { color: $color-error; }
+}
+
+.queueMeta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.queueMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.queueMetaIcon {
+  font-size: 20rpx;
+}
+
+.queueMetaText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.queueRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.queueTime {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.queueTimeLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.queueActions {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.miniBtn {
+  padding: 6rpx 14rpx;
+  border-radius: $radius-xs;
+  background: $color-bg-hover;
+  transition: all $transition-base;
+
+  &.up { background: rgba(124, 58, 237, 0.1); }
+  &.down { background: rgba(107, 114, 128, 0.08); }
+  &.priority { background: rgba(239, 68, 68, 0.1); }
+
+  &:active { transform: scale(0.94); }
+}
+
+.miniBtnText {
+  font-size: 20rpx;
+  line-height: 1;
+
+  .up & { color: $color-dispatch-purple; }
+  .down & { color: #6B7280; }
+  .priority & { color: $color-error; }
+}
+
+.noticeSection {
+  margin-top: $spacing-lg;
+}
+
+.noticeCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+}
+
+.noticeCardHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.noticeTypeTag {
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+
+  &.urgent { background: rgba(239, 68, 68, 0.1); }
+  &.road { background: rgba(59, 130, 246, 0.1); }
+  &.drying { background: rgba(16, 185, 129, 0.1); }
+}
+
+.noticeTypeText {
+  font-size: 20rpx;
+  line-height: 1;
+
+  .urgent & { color: $color-error; }
+  .road & { color: $color-info; }
+  .drying & { color: $color-secondary-dark; }
+}
+
+.noticeTitle {
+  flex: 1;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.noticeTime {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.noticeContent {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.7;
+}

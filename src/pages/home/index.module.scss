@@ -1,0 +1,342 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.header {
+  background: linear-gradient(180deg, $color-primary 0%, $color-primary-light 60%, transparent 100%);
+  padding: $spacing-lg $page-padding $spacing-xl * 2;
+  padding-top: calc(env(safe-area-inset-top) + 20rpx);
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-xl;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex: 1;
+}
+
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4rpx solid rgba(255, 255, 255, 0.5);
+}
+
+.avatarIcon {
+  font-size: 44rpx;
+}
+
+.userDetail {
+  flex: 1;
+}
+
+.greeting {
+  display: block;
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 6rpx;
+}
+
+.userName {
+  display: block;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4rpx;
+  margin-top: 6rpx;
+  padding: 4rpx 14rpx;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: $radius-button;
+}
+
+.roleTagIcon {
+  font-size: 20rpx;
+}
+
+.roleTagText {
+  font-size: 20rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.switchBtn {
+  padding: 12rpx 24rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2rpx solid rgba(255, 255, 255, 0.35);
+  border-radius: $radius-button;
+  flex-shrink: 0;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.switchBtnText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.headerTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  line-height: 1.3;
+  margin-bottom: $spacing-xs;
+}
+
+.headerSubtitle {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.content {
+  padding: 0 $page-padding;
+  margin-top: -80rpx;
+}
+
+.section {
+  margin-bottom: $spacing-lg;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.sectionTitleIcon {
+  font-size: 28rpx;
+}
+
+.sectionTitleText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionMore {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+}
+
+.todoCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.todoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.todoTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.todoCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44rpx;
+  height: 44rpx;
+  padding: 0 12rpx;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 22rpx;
+}
+
+.todoCountText {
+  font-size: 22rpx;
+  color: $color-error;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+}
+
+.todoList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.todoItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.todoItemIcon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.todoItemBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.todoItemTitle {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 4rpx;
+  @include text-ellipsis;
+}
+
+.todoItemDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.todoItemArrow {
+  font-size: 32rpx;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.dryingCard {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(52, 211, 153, 0.06));
+  border: 2rpx solid rgba(16, 185, 129, 0.2);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+}
+
+.dryingHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.dryingTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.dryingTitleIcon {
+  font-size: 28rpx;
+}
+
+.dryingTitleText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-dark;
+}
+
+.dryingList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.dryingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: $radius-md;
+}
+
+.dryingItemLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.dryingItemName {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 4rpx;
+  @include text-ellipsis;
+}
+
+.dryingItemVillage {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.dryingItemRight {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.dryingCapacity {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-secondary-dark;
+  line-height: 1;
+  margin-bottom: 4rpx;
+}
+
+.dryingStatus {
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+  display: inline-block;
+
+  &.available {
+    background: rgba(16, 185, 129, 0.15);
+    color: $color-secondary-dark;
+  }
+  &.partial {
+    background: rgba(245, 158, 11, 0.15);
+    color: $color-primary-dark;
+  }
+  &.full {
+    background: rgba(239, 68, 68, 0.1);
+    color: $color-error;
+  }
+}

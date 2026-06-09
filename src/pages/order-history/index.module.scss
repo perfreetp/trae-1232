@@ -1,0 +1,244 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 40rpx);
+}
+
+.header {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.15) 0%, transparent 100%);
+  padding: $spacing-lg $page-padding;
+  padding-top: calc(env(safe-area-inset-top) + 20rpx);
+}
+
+.searchRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.searchBar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.searchIcon { font-size: 28rpx; }
+.searchInput {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+.searchPlaceholder {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.calBtn {
+  width: 80rpx;
+  height: 80rpx;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  box-shadow: $shadow-card;
+  flex-shrink: 0;
+}
+
+.yearTabs {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.yearTab {
+  padding: 12rpx 24rpx;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+  border: 2rpx solid transparent;
+
+  &.active {
+    background: linear-gradient(135deg, $color-dispatch-purple, #8B5CF6);
+  }
+}
+
+.yearText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+
+  .active & {
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.content {
+  padding: $spacing-lg $page-padding;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg $spacing-md;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.sumCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+.sumNum {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-dispatch-purple;
+  line-height: 1;
+}
+.sumLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.orderItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active { transform: scale(0.995); }
+}
+
+.orderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.orderNo {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.statusTag {
+  padding: 4rpx 14rpx;
+  border-radius: $radius-xs;
+  font-size: 20rpx;
+  line-height: 1.4;
+  background: rgba(16, 185, 129, 0.1);
+  color: $color-secondary-dark;
+  font-weight: $font-weight-medium;
+}
+
+.orderMid {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-sm 0;
+  border-bottom: 2rpx dashed $color-divider;
+  margin-bottom: $spacing-sm;
+}
+
+.plotInfo { flex: 1; }
+.plotAddr {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 6rpx;
+}
+.plotDetail {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.priceCol {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.price {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+}
+
+.orderBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.peerInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.peerAvatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FCD34D, #F59E0B);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+}
+
+.peerName {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.actionBtns {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.ghostBtn {
+  padding: 10rpx 20rpx;
+  border-radius: $radius-button;
+  background: $color-bg-hover;
+  border: 2rpx solid $color-divider;
+  transition: all $transition-base;
+
+  &:active { transform: scale(0.96); }
+}
+
+.ghostBtnText {
+  font-size: 22rpx;
+  color: $color-text-secondary;
+  line-height: 1;
+}
+
+.primaryBtn {
+  padding: 10rpx 20rpx;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary, $color-primary-light);
+  transition: all $transition-base;
+
+  &:active { transform: scale(0.96); }
+}
+
+.primaryBtnText {
+  font-size: 22rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+  line-height: 1;
+}

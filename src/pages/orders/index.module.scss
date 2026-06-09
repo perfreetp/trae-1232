@@ -1,0 +1,93 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.tabBar {
+  display: flex;
+  background: $color-bg-card;
+  padding: $spacing-xs $page-padding;
+  padding-top: calc(env(safe-area-inset-top) + 8rpx);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.tabItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-md $spacing-xs;
+  gap: 6rpx;
+  position: relative;
+  transition: all $transition-base;
+}
+
+.tabItem.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 48rpx;
+  height: 6rpx;
+  background: linear-gradient(135deg, $color-primary, $color-primary-light);
+  border-radius: 3rpx;
+}
+
+.tabLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-medium;
+
+  .active & {
+    color: $color-primary-dark;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.tabCount {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+
+  .active & {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.content {
+  padding: $spacing-lg $page-padding;
+}
+
+.summaryCard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.summaryNum {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}

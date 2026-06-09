@@ -1,0 +1,279 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 160rpx);
+}
+
+.hero {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  padding: $spacing-xl $page-padding;
+  padding-top: calc(env(safe-area-inset-top) + 32rpx);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroPattern {
+  position: absolute;
+  top: -40rpx;
+  right: -40rpx;
+  width: 240rpx;
+  height: 240rpx;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+}
+
+.heroTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  margin-bottom: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.heroTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.heroTag {
+  padding: 6rpx 16rpx;
+  background: rgba(255,255,255,0.2);
+  border-radius: $radius-button;
+  border: 2rpx solid rgba(255,255,255,0.3);
+}
+
+.heroTagText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  line-height: 1;
+}
+
+.heroStats {
+  display: flex;
+  gap: $spacing-lg;
+  margin-top: $spacing-xl;
+  position: relative;
+  z-index: 1;
+}
+
+.heroStatItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.heroStatNum {
+  font-size: $font-size-xxxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  line-height: 1;
+}
+
+.heroStatUnit {
+  font-size: 20rpx;
+  color: rgba(255,255,255,0.8);
+  margin-left: 4rpx;
+}
+
+.heroStatLabel {
+  font-size: $font-size-xs;
+  color: rgba(255,255,255,0.85);
+}
+
+.content {
+  padding: $spacing-lg $page-padding;
+  margin-top: -$spacing-sm;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 2rpx solid $color-divider;
+}
+
+.cardHeaderIcon {
+  font-size: 28rpx;
+}
+
+.cardHeaderTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-sm 0;
+
+  &:not(:last-child) {
+    border-bottom: 2rpx dashed $color-divider;
+  }
+}
+
+.infoLabel {
+  width: 160rpx;
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  line-height: 1.6;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.6;
+  font-weight: $font-weight-medium;
+}
+
+.queueCard {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(139, 92, 246, 0.04));
+  border: 2rpx solid rgba(124, 58, 237, 0.2);
+}
+
+.queueRankRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.queueRankBadge {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-dispatch-purple, #8B5CF6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 6rpx 16rpx rgba(124, 58, 237, 0.3);
+}
+
+.queueRankNo {
+  font-size: $font-size-xxxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  line-height: 1;
+}
+
+.queueRankLabel {
+  font-size: 18rpx;
+  color: rgba(255,255,255,0.9);
+  line-height: 1;
+  margin-top: 2rpx;
+}
+
+.queueInfo {
+  flex: 1;
+}
+
+.queueInfoRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6rpx 0;
+}
+
+.queueInfoLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.queueInfoValue {
+  font-size: $font-size-xs;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.progressBar {
+  height: 12rpx;
+  background: rgba(0,0,0,0.06);
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-top: $spacing-md;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-dispatch-purple, #8B5CF6);
+  border-radius: 6rpx;
+  transition: width $transition-base;
+}
+
+.progressTip {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8rpx;
+}
+
+.progressTipText {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + $spacing-md);
+  background: $color-bg-card;
+  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.06);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 100;
+}
+
+.btn {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active { transform: scale(0.97); }
+
+  &.primary {
+    background: linear-gradient(135deg, $color-primary, $color-primary-light);
+    box-shadow: 0 6rpx 16rpx rgba(245, 158, 11, 0.3);
+  }
+  &.outline {
+    background: transparent;
+    border: 2rpx solid $color-primary;
+  }
+  &.secondary {
+    background: $color-secondary;
+    box-shadow: 0 6rpx 16rpx rgba(16, 185, 129, 0.3);
+  }
+}
+
+.btnText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+
+  .primary &, .secondary & { color: $color-text-white; }
+  .outline & { color: $color-primary; }
+}

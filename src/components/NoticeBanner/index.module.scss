@@ -1,0 +1,70 @@
+@use '@/styles/variables.scss' as *;
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.04));
+  border: 2rpx solid rgba(245, 158, 11, 0.2);
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.iconBox {
+  flex-shrink: 0;
+}
+
+.scrollIcon {
+  font-size: 36rpx;
+}
+
+.swiper {
+  flex: 1;
+  height: 56rpx;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  height: 56rpx;
+}
+
+.urgent {
+  .title {
+    color: $color-error;
+  }
+}
+
+.tag {
+  flex-shrink: 0;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.tagUrgent {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.tagText {
+  font-size: 20rpx;
+  color: $color-primary-dark;
+  line-height: 1;
+  font-weight: $font-weight-medium;
+}
+
+.title {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.arrow {
+  flex-shrink: 0;
+  font-size: 32rpx;
+  color: $color-text-tertiary;
+  line-height: 1;
+}

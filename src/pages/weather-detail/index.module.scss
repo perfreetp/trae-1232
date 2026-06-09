@@ -1,0 +1,317 @@
+@use '@/styles/variables.scss' as *;
+
+.pageWrap {
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 40rpx);
+}
+
+.hero {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #7C3AED 100%);
+  padding: $spacing-xl $page-padding;
+  padding-top: calc(env(safe-area-inset-top) + 32rpx);
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+}
+
+.pattern {
+  position: absolute;
+  top: -100rpx;
+  right: -60rpx;
+  width: 400rpx;
+  height: 400rpx;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+
+.location {
+  font-size: $font-size-sm;
+  opacity: 0.95;
+  margin-bottom: 4rpx;
+  position: relative;
+  z-index: 1;
+}
+.updateTime {
+  font-size: 20rpx;
+  opacity: 0.75;
+  margin-bottom: $spacing-lg;
+  position: relative;
+  z-index: 1;
+}
+
+.currentRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.currentLeft { display: flex; flex-direction: column; }
+.weatherIcon {
+  font-size: 140rpx;
+  line-height: 1;
+  margin-left: -20rpx;
+  margin-bottom: $spacing-sm;
+}
+.weatherDesc {
+  font-size: $font-size-md;
+  opacity: 0.95;
+  margin-bottom: $spacing-sm;
+}
+
+.tempRange {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.tempWrap {
+  display: flex;
+  align-items: flex-start;
+}
+.temp {
+  font-size: 160rpx;
+  font-weight: 300;
+  line-height: 1;
+  font-family: 'DIN Alternate', sans-serif;
+}
+.tempUnit {
+  font-size: $font-size-xl;
+  line-height: 1.2;
+  margin-top: 20rpx;
+  margin-left: 4rpx;
+  opacity: 0.8;
+}
+
+.riskRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-xl;
+  position: relative;
+  z-index: 1;
+}
+.riskCard {
+  flex: 1;
+  padding: $spacing-md;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(6rpx);
+  border-radius: $radius-lg;
+  border: 2rpx solid rgba(255,255,255,0.2);
+}
+.riskIcon { font-size: 28rpx; display: block; margin-bottom: 4rpx; }
+.riskLabel { font-size: 20rpx; opacity: 0.9; margin-bottom: 4rpx; }
+.riskValue { font-size: $font-size-sm; font-weight: $font-weight-semibold; }
+.riskValue.high { color: #FECACA; }
+.riskValue.medium { color: #FDE68A; }
+
+.content { padding: $spacing-lg $page-padding; }
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 2rpx solid $color-divider;
+}
+.cardHeaderIcon { font-size: 24rpx; }
+.cardHeaderTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+}
+.cardHeaderMore {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.hourly {
+  display: flex;
+  gap: $spacing-xs;
+  overflow-x: auto;
+  @include scroll-x-container;
+}
+.hourItem {
+  @include scroll-x-item(auto);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: $spacing-sm 12rpx;
+  border-radius: $radius-md;
+  min-width: 90rpx;
+  transition: all $transition-base;
+
+  &.active {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.06));
+  }
+}
+.hourTime { font-size: 20rpx; color: $color-text-tertiary; .active & { color: $color-primary-dark; font-weight: $font-weight-semibold; } }
+.hourIcon { font-size: 36rpx; line-height: 1; }
+.hourTemp { font-size: $font-size-sm; font-weight: $font-weight-semibold; color: $color-text-primary; }
+.hourRain { font-size: 18rpx; color: $color-info; }
+
+.dailyItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm 0;
+  &:not(:last-child) { border-bottom: 2rpx dashed $color-divider; }
+}
+.dayLabel {
+  width: 120rpx;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.day1 { font-size: $font-size-sm; font-weight: $font-weight-semibold; color: $color-text-primary; }
+.day2 { font-size: 20rpx; color: $color-text-tertiary; }
+
+.dayIcon {
+  width: 56rpx;
+  font-size: 32rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dayTemp {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 40rpx;
+}
+.tempBar {
+  position: relative;
+  width: 70%;
+  height: 8rpx;
+  border-radius: 4rpx;
+  background: linear-gradient(90deg, #93C5FD, #FDE68A, #FCA5A5);
+}
+.tempBar .l {
+  position: absolute;
+  top: -6rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #93C5FD;
+  box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.1);
+}
+.tempBar .r {
+  position: absolute;
+  top: -6rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #FCA5A5;
+  box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.1);
+}
+.dayLow { width: 70rpx; text-align: right; font-size: $font-size-sm; color: $color-info; }
+.dayHigh { width: 70rpx; text-align: right; font-size: $font-size-sm; font-weight: $font-weight-semibold; color: $color-error; }
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+}
+.infoCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+}
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: 4rpx;
+}
+.infoIcon { font-size: 28rpx; line-height: 1; }
+.infoLabel { font-size: 20rpx; color: $color-text-tertiary; }
+.infoValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.2;
+}
+.infoDesc { font-size: 20rpx; color: $color-text-tertiary; }
+
+.warnCard {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.04));
+  border: 2rpx solid rgba(239, 68, 68, 0.2);
+  padding: $spacing-lg;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-lg;
+}
+.warnHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+.warnIcon { font-size: 36rpx; }
+.warnTag {
+  padding: 4rpx 12rpx;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: $radius-xs;
+  font-size: 20rpx;
+  color: $color-error;
+  font-weight: $font-weight-semibold;
+  line-height: 1.4;
+}
+.warnTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+}
+.warnContent {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.7;
+}
+
+.adviceCard {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02));
+  border: 2rpx solid rgba(16, 185, 129, 0.2);
+}
+.adviceItem {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-sm 0;
+  &:not(:last-child) { border-bottom: 2rpx dashed rgba(16, 185, 129, 0.15); }
+}
+.adviceIcon {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+.adviceBody { flex: 1; }
+.adviceTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-dark;
+  margin-bottom: 4rpx;
+}
+.adviceContent {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}

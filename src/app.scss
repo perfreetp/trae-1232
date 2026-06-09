@@ -1,0 +1,23 @@
+@use '@/styles/compat.scss';
+@use '@/styles/variables.scss' as *;
+
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  color: $color-text-primary;
+  background: linear-gradient(180deg, $color-bg-page-gradient-start 0%, $color-bg-page 100%);
+  min-height: 100vh;
+}
+
+.pageContainer {
+  padding: 0 $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.safeBottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
