@@ -74,7 +74,7 @@ const HomePage: React.FC = () => {
     { key: 'history', icon: '📜', label: '历史订单', color: 'blue', path: '/pages/order-history/index' },
   ] : [
     { key: 'dispatch', icon: '📋', label: '排队调度', color: 'primary', path: '/pages/dispatch/index' },
-    { key: 'priority', icon: '🎯', label: '优先户', color: 'red', badge: mockQueue.filter(q => q.priority).length || undefined, path: '/pages/dispatch/index' },
+    { key: 'priority', icon: '🎯', label: '优先户', color: 'red', badge: queue.filter(q => q.priority).length || undefined, path: '/pages/dispatch/index' },
     { key: 'notice', icon: '📢', label: '发布通知', color: 'orange', path: '/pages/notice-publish/index' },
     { key: 'drying', icon: '☀️', label: '晾晒场', color: 'green' },
     { key: 'weather', icon: '⛅', label: '天气预警', color: 'blue', badge: mockWeather.alerts.length || undefined, path: '/pages/weather-detail/index' },

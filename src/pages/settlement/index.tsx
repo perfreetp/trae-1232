@@ -5,6 +5,7 @@ import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useUserStore } from '../../store/userStore';
 import { useAppStore } from '../../store/appStore';
+import { calcOrderFinance, formatMoney, formatArea } from '../../utils/orderFinance';
 
 const ratingLabels = ['差', '一般', '中等', '良好', '优秀'];
 const defaultTags = [
@@ -18,12 +19,7 @@ const SettlementPage: React.FC = () => {
   const { getOrder, updateOrder } = useAppStore();
   const order = getOrder(router.params.id) || useAppStore.getState().orders[useAppStore.getState().orders.length - 1];
 
-  const area = useMemo(() => order?.workRecord?.actualArea ?? order?.area ?? 0, [order]);
-  const unitPrice = useMemo(() => order?.quotedPrice ?? 0, [order]);
-  const baseTotal = useMemo(() => Math.round(area * unitPrice * 100) / 100, [area, unitPrice]);
-  const fuelCost = useMemo(() => order?.workRecord?.fuelCost ?? 0, [order]);
-  const debtAmount = useMemo(() => order?.workRecord?.debtAmount ?? 0, [order]);
-  const actualPay = useMemo(() => Math.round((baseTotal + fuelCost - debtAmount) * 100) / 100, [baseTotal, fuelCost, debtAmount]);
+  const fin = useMemo(() => calcOrderFinance(order), [order]);
 
   const orderNo = useMemo(() => order?.id ?? '', [order]);
   const plotAddress = useMemo(() => order?.plot?.address ?? '', [order]);
@@ -84,7 +80,7 @@ const SettlementPage: React.FC = () => {
 
   const pay = () => {
     if (!order?.id) return;
-    console.log('[Settlement] 支付:', payMethod, '金额:', actualPay);
+    console.log('[Settlement] 支付:', payMethod, '金额:', fin.actualPaid);
     Taro.showLoading({ title: '支付中...', mask: true });
     setTimeout(() => {
       Taro.hideLoading();
@@ -93,7 +89,7 @@ const SettlementPage: React.FC = () => {
         status: 'settled',
         settledAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
         paymentMethod: payMethod,
-        totalAmount: actualPay
+        totalAmount: fin.totalPayable
       } as any);
       Taro.showToast({ title: '✅ 支付成功', icon: 'success' });
     }, 1000);
@@ -116,7 +112,7 @@ const SettlementPage: React.FC = () => {
         tags,
         createdAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
       };
-      updateOrder(order.id, { evaluation } as any);
+      updateOrder(order.id, { evaluation, totalAmount: fin.totalPayable } as any);
       setReviewSubmitted(true);
       Taro.showToast({ title: '✅ 评价已提交', icon: 'success' });
       setTimeout(() => Taro.switchTab({ url: '/pages/orders/index' }), 1200);
@@ -137,8 +133,7 @@ const SettlementPage: React.FC = () => {
         <Text className={styles.orderNo}>订单号 {orderNo}</Text>
         <Text className={styles.title}>{paid ? '✅ 结算完成' : '💰 待结算金额'}</Text>
         <View className={styles.amountWrap}>
-          <Text className={styles.amountPrefix}>¥</Text>
-          <Text className={styles.amount}>{actualPay}</Text>
+          <Text className={styles.amount}>{paid ? formatMoney(fin.actualPaid) : formatMoney(fin.totalPayable)}</Text>
         </View>
       </View>
 
@@ -163,26 +158,22 @@ const SettlementPage: React.FC = () => {
             <Text className={styles.infoValue}>{plotAddress}</Text>
           </View>
           <View className={styles.infoRow}>
-            <Text className={styles.infoLabel}>作业亩数</Text>
-            <Text className={styles.infoValue}>{area} 亩 × ¥{unitPrice}</Text>
+            <Text className={styles.infoLabel}>基础作业费</Text>
+            <Text className={styles.infoValue}>{formatArea(fin.actualArea)} 亩 × {formatMoney(fin.unitPrice)} = {formatMoney(fin.workFee)}</Text>
           </View>
           <View className={styles.infoRow}>
-            <Text className={styles.infoLabel}>基础费用</Text>
-            <Text className={styles.infoValue}>¥{baseTotal}</Text>
+            <Text className={styles.infoLabel}>燃油费</Text>
+            <Text className={styles.infoValue}>{formatMoney(fin.fuelCost)}</Text>
           </View>
-          <View className={styles.infoRow}>
-            <Text className={styles.infoLabel}>油费</Text>
-            <Text className={styles.infoValue}>¥{fuelCost}</Text>
-          </View>
-          {debtAmount > 0 ? (
+          {fin.debtAmount > 0 ? (
             <View className={styles.infoRow}>
-              <Text className={styles.infoLabel} style={{ color: '#EF4444' }}>已减欠款</Text>
-              <Text className={styles.infoValue} style={{ color: '#10B981' }}>-¥{debtAmount}</Text>
+              <Text className={styles.infoLabel} style={{ color: '#EF4444' }}>欠款扣减</Text>
+              <Text className={styles.infoValue} style={{ color: '#10B981' }}>-{formatMoney(fin.debtAmount)}</Text>
             </View>
           ) : null}
           <View className={classnames(styles.infoRow, styles.totalRow)}>
             <Text className={styles.infoLabel}>应付总额</Text>
-            <Text className={styles.infoValue}>¥{actualPay}</Text>
+            <Text className={styles.infoValue}>{formatMoney(fin.totalPayable)}</Text>
           </View>
         </View>
 
@@ -291,7 +282,7 @@ const SettlementPage: React.FC = () => {
               <Text className={styles.btnText}>稍后</Text>
             </View>
             <View className={classnames(styles.btn, styles.primary)} onClick={pay}>
-              <Text className={styles.btnText}>立即支付 ¥{actualPay}</Text>
+              <Text className={styles.btnText}>立即支付 {formatMoney(fin.actualPaid)}</Text>
             </View>
           </>
         ) : (

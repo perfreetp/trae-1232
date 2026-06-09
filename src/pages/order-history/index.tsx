@@ -5,6 +5,7 @@ import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useAppStore } from '../../store/appStore';
 import { useUserStore } from '../../store/userStore';
+import { calcOrderFinance, formatMoney, formatArea } from '../../utils/orderFinance';
 
 const OrderHistoryPage: React.FC = () => {
   const { currentRole, user } = useUserStore();
@@ -45,7 +46,7 @@ const OrderHistoryPage: React.FC = () => {
     });
   }, [settledOrders, year]);
 
-  const orders = useMemo(() => {
+  const filteredOrders = useMemo(() => {
     if (!keyword) return yearFiltered;
     const kw = keyword.toLowerCase();
     return yearFiltered.filter(o =>
@@ -56,8 +57,15 @@ const OrderHistoryPage: React.FC = () => {
     );
   }, [yearFiltered, keyword]);
 
-  const totalArea = useMemo(() => orders.reduce((s, o) => s + o.area, 0), [orders]);
-  const totalAmount = useMemo(() => orders.reduce((s, o) => s + o.totalAmount, 0), [orders]);
+  const orders = useMemo(() => {
+    return filteredOrders.map(o => ({
+      ...o,
+      fin: calcOrderFinance(o),
+    }));
+  }, [filteredOrders]);
+
+  const totalArea = useMemo(() => orders.reduce((s, o) => s + o.fin.actualArea, 0), [orders]);
+  const totalAmount = useMemo(() => orders.reduce((s, o) => s + o.fin.totalPayable, 0), [orders]);
   const avgRating = useMemo(() => {
     const rated = orders.filter(o => o.evaluation && typeof o.evaluation.rating === 'number');
     if (rated.length === 0) return '--';
@@ -121,11 +129,11 @@ const OrderHistoryPage: React.FC = () => {
             <Text className={styles.sumLabel}>订单数</Text>
           </View>
           <View className={styles.sumCell}>
-            <Text className={styles.sumNum}>{totalArea.toFixed(1)}</Text>
+            <Text className={styles.sumNum}>{formatArea(totalArea)}</Text>
             <Text className={styles.sumLabel}>总面积(亩)</Text>
           </View>
           <View className={styles.sumCell}>
-            <Text className={styles.sumNum}>¥{totalAmount}</Text>
+            <Text className={styles.sumNum}>{formatMoney(totalAmount)}</Text>
             <Text className={styles.sumLabel}>总金额</Text>
           </View>
           <View className={styles.sumCell}>
@@ -149,10 +157,10 @@ const OrderHistoryPage: React.FC = () => {
             <View className={styles.orderMid}>
               <View className={styles.plotInfo}>
                 <Text className={styles.plotAddr}>📍 {o.plot.address}</Text>
-                <Text className={styles.plotDetail}>🌾 {o.area} 亩 · ¥{o.quotedPrice}/亩 · {o.machineName}</Text>
+                <Text className={styles.plotDetail}>🌾 {formatArea(o.fin.actualArea)} 亩 · ¥{o.fin.unitPrice}/亩 · {o.machineName}</Text>
               </View>
               <View className={styles.priceCol}>
-                <Text className={styles.price}>¥{o.totalAmount}</Text>
+                <Text className={styles.price}>{o.fin.debtAmount > 0 ? formatMoney(o.fin.actualPaid) : formatMoney(o.fin.totalPayable)}</Text>
               </View>
             </View>
             <View className={styles.orderBottom}>

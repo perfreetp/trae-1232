@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
@@ -6,6 +6,7 @@ import classnames from 'classnames';
 import { OrderStatus } from '../../types';
 import { useUserStore } from '../../store/userStore';
 import { useAppStore } from '../../store/appStore';
+import { calcOrderFinance, formatMoney, formatArea } from '../../utils/orderFinance';
 
 const statusConfig: Record<OrderStatus, { title: string; desc: string }> = {
   pending: { title: '⏳ 等待机手接单', desc: '村级协调员正在调度，请耐心等候匹配' },
@@ -52,14 +53,10 @@ const OrderDetailPage: React.FC = () => {
 
   const sc = statusConfig[order.status];
   const createdAt = safeStr(order.plot.createdAt || order.demand.createdAt);
-  const actualArea = safeNum(order.workRecord?.actualArea, order.area);
+  const fin = useMemo(() => calcOrderFinance(order), [order]);
   const workHours = order.workRecord ? calcWorkHours(order.workRecord.startTime, order.workRecord.endTime) : '—';
-  const fuelCost = safeNum(order.workRecord?.fuelCost);
-  const debtAmount = safeNum(order.workRecord?.debtAmount);
   const evaluation = order.evaluation;
   const rating = safeNum(evaluation?.rating);
-  const baseFee = Math.round(safeNum(actualArea) * safeNum(order.quotedPrice));
-  const totalAmount = Math.round(safeNum(order.totalAmount)) || baseFee;
 
   const timeline = [
     { title: '抢收需求已发起', time: createdAt, active: true },
@@ -240,8 +237,8 @@ const OrderDetailPage: React.FC = () => {
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel}>确认亩数</Text>
               <Text className={styles.infoValue}>
-                {actualArea} 亩
-                {actualArea !== safeNum(order.area) && <Text style={{ color: '#F59E0B', marginLeft: 8 }}>（原 {safeNum(order.area)} 亩）</Text>}
+                {formatArea(fin.actualArea)}亩（实际）
+                {fin.areaDiff !== 0 && <Text style={{ color: '#F59E0B', marginLeft: 8 }}>（原 {formatArea(fin.quotedArea)} 亩）</Text>}
               </Text>
             </View>
             <View className={styles.infoRow}>
@@ -251,7 +248,7 @@ const OrderDetailPage: React.FC = () => {
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel}>油费备注</Text>
               <Text className={styles.infoValue}>
-                ¥{fuelCost}
+                {formatMoney(fin.fuelCost)}
                 {order.workRecord.fuelNote ? `（${order.workRecord.fuelNote}）` : ''}
               </Text>
             </View>
@@ -271,10 +268,10 @@ const OrderDetailPage: React.FC = () => {
                 </View>
               </>
             ) : null}
-            {debtAmount > 0 && (
+            {fin.debtAmount > 0 && (
               <View className={styles.debtRow}>
                 <Text className={styles.debtLabel}>⚠️ 待补欠款{order.workRecord.debtNote ? `（${order.workRecord.debtNote}）` : ''}</Text>
-                <Text className={styles.debtValue}>¥{debtAmount}</Text>
+                <Text className={styles.debtValue}>{formatMoney(fin.debtAmount)}</Text>
               </View>
             )}
           </View>
@@ -286,27 +283,31 @@ const OrderDetailPage: React.FC = () => {
             <Text className={styles.cardHeaderTitle}>费用明细</Text>
           </View>
           <View className={styles.priceRow}>
-            <Text className={styles.priceLabel}>作业单价</Text>
-            <Text className={styles.priceValue}>¥{safeNum(order.quotedPrice)} / 亩</Text>
-          </View>
-          <View className={styles.priceRow}>
-            <Text className={styles.priceLabel}>作业亩数</Text>
-            <Text className={styles.priceValue}>× {actualArea} 亩</Text>
-          </View>
-          <View className={styles.priceRow}>
             <Text className={styles.priceLabel}>基础作业费</Text>
-            <Text className={styles.priceValue}>¥{baseFee}</Text>
+            <Text className={styles.priceValue}>{formatArea(fin.actualArea)}亩 × {formatMoney(fin.unitPrice)}/亩 = {formatMoney(fin.workFee)}</Text>
           </View>
-          {fuelCost > 0 && (
+          {fin.fuelCost > 0 && (
             <View className={styles.priceRow}>
-              <Text className={styles.priceLabel}>油费</Text>
-              <Text className={styles.priceValue}>¥{fuelCost}</Text>
+              <Text className={styles.priceLabel}>燃油费</Text>
+              <Text className={styles.priceValue}>{formatMoney(fin.fuelCost)}</Text>
+            </View>
+          )}
+          {fin.debtAmount > 0 && (
+            <View className={styles.priceRow}>
+              <Text className={styles.priceLabel}>欠款扣减</Text>
+              <Text className={styles.priceValue} style={{ color: '#EF4444' }}>- {formatMoney(fin.debtAmount)}</Text>
             </View>
           )}
           <View className={classnames(styles.priceRow, styles.totalRow)}>
-            <Text className={styles.priceLabel}>应付总额</Text>
-            <Text className={styles.priceValue}>¥{totalAmount}</Text>
+            <Text className={styles.priceLabel}>应收总额</Text>
+            <Text className={styles.priceValue}>{formatMoney(fin.totalPayable)}</Text>
           </View>
+          {fin.debtAmount > 0 && (
+            <View className={classnames(styles.priceRow, styles.totalRow)}>
+              <Text className={styles.priceLabel}>实收</Text>
+              <Text className={styles.priceValue} style={{ color: '#10B981' }}>{formatMoney(fin.actualPaid)}</Text>
+            </View>
+          )}
         </View>
 
         {evaluation && (
