@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useUserStore } from '../../store/userStore';
+import { useAppStore } from '../../store/appStore';
 import { UserRole } from '../../types';
-import { mockPlots } from '../../data/mockPlots';
-import { mockOrders } from '../../data/mockOrders';
-import { mockWeather, mockQueue, mockDryingFields, mockNotices } from '../../data/mockWeather';
+import { mockWeather } from '../../data/mockWeather';
 import { mockMachines } from '../../data/mockMachines';
 import NoticeBanner from '../../components/NoticeBanner';
 import WeatherCard from '../../components/WeatherCard';
@@ -22,27 +21,37 @@ const roleConfig: Record<UserRole, { icon: string; label: string; greetings: str
 
 const HomePage: React.FC = () => {
   const { user, currentRole, setRole } = useUserStore();
+  const plots = useAppStore(s => s.plots);
+  const orders = useAppStore(s => s.orders);
+  const queue = useAppStore(s => s.queue);
+  const dryingFields = useAppStore(s => s.dryingFields);
+  const notices = useAppStore(s => s.notices);
+  const refreshQueueRank = useAppStore(s => s.refreshQueueRank);
   const roleInfo = roleConfig[currentRole];
 
-  const urgentNotices = mockNotices.filter(n => n.urgent).slice(0, 3);
-  const myPlots = currentRole === 'farmer' ? mockPlots.filter(p => p.farmerId === user?.id) : mockPlots;
-  const myOrders = mockOrders.filter(o => {
+  useEffect(() => {
+    refreshQueueRank();
+  }, [refreshQueueRank]);
+
+  const urgentNotices = notices.filter(n => n.urgent).slice(0, 3);
+  const myPlots = currentRole === 'farmer' ? plots.filter(p => p.farmerId === user?.id) : plots;
+  const myOrders = orders.filter(o => {
     if (currentRole === 'farmer') return o.farmerId === user?.id;
-    if (currentRole === 'operator') return o.operatorId === 'op001';
+    if (currentRole === 'operator') return o.operatorId === 'op001' || o.operatorId === 'op002' || o.operatorId === 'op003';
     return true;
   });
 
   const pendingCount = currentRole === 'farmer'
     ? myPlots.filter(p => p.hasDemand && (p.queuePosition ?? 99) > 0).length
     : currentRole === 'operator'
-    ? mockOrders.filter(o => o.status === 'pending').length
-    : mockQueue.filter(q => q.status === 'waiting').length;
+    ? orders.filter(o => o.status === 'pending').length
+    : queue.filter(q => q.status === 'waiting').length;
 
   const workingCount = currentRole === 'operator'
-    ? mockOrders.filter(o => o.status === 'working').length
+    ? orders.filter(o => o.status === 'working').length
     : mockMachines.filter(m => m.status === 'working').length;
 
-  const completedToday = mockOrders.filter(o => o.status === 'settled').length;
+  const completedToday = orders.filter(o => o.status === 'settled').length;
   const idleMachines = mockMachines.filter(m => m.status === 'idle').length;
 
   const quickEntries: QuickEntryItem[] = currentRole === 'farmer' ? [
@@ -83,8 +92,8 @@ const HomePage: React.FC = () => {
     { icon: '⚡', title: '西洼地作业中', desc: '张丰收 15亩 · 预计10:30完', path: '/pages/order-detail/index?id=o002' },
     { icon: '📸', title: '提交作业记录', desc: '河边麦田 O003', path: '/pages/work-submit/index?id=o002' },
   ] : [
-    { icon: '🎯', title: '优先户待确认', desc: mockQueue.filter(q => q.priority).length + ' 户需重点关注', path: '/pages/dispatch/index' },
-    { icon: '📋', title: '待调度 ' + mockQueue.filter(q => q.status === 'waiting').length + ' 单', desc: '红星村、前进村排队中', path: '/pages/dispatch/index' },
+    { icon: '🎯', title: '优先户待确认', desc: queue.filter(q => q.priority).length + ' 户需重点关注', path: '/pages/dispatch/index' },
+    { icon: '📋', title: '待调度 ' + queue.filter(q => q.status === 'waiting').length + ' 单', desc: '红星村、前进村排队中', path: '/pages/dispatch/index' },
     { icon: '📢', title: '紧急通知发布', desc: '暴雨预警 请提前抢收', path: '/pages/notice-publish/index' },
   ];
 
@@ -176,7 +185,7 @@ const HomePage: React.FC = () => {
               unit="单"
               icon="✅"
               color="success"
-              trend={`面积 ${mockOrders.filter(o => o.status === 'settled').reduce((s, o) => s + o.area, 0).toFixed(0)} 亩`}
+              trend={`面积 ${orders.filter(o => o.status === 'settled').reduce((s, o) => s + o.area, 0).toFixed(0)} 亩`}
             />
             <StatCard
               label="空闲农机"
@@ -227,7 +236,7 @@ const HomePage: React.FC = () => {
               <Text className={styles.sectionMore}>更多 ›</Text>
             </View>
             <View className={styles.dryingList}>
-              {mockDryingFields.slice(0, 3).map((field) => (
+              {dryingFields.slice(0, 3).map((field) => (
                 <View key={field.id} className={styles.dryingItem}>
                   <View className={styles.dryingItemLeft}>
                     <Text className={styles.dryingItemName}>{field.name}</Text>

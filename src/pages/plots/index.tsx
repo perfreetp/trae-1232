@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useUserStore } from '../../store/userStore';
-import { mockPlots } from '../../data/mockPlots';
+import { useAppStore } from '../../store/appStore';
 import PlotCard from '../../components/PlotCard';
 import EmptyState from '../../components/EmptyState';
 
@@ -12,11 +12,17 @@ type FilterType = 'all' | 'queued' | 'idle' | 'mature' | 'priority';
 
 const PlotsPage: React.FC = () => {
   const { user, currentRole } = useUserStore();
+  const plots = useAppStore(s => s.plots);
+  const refreshQueueRank = useAppStore(s => s.refreshQueueRank);
   const [filter, setFilter] = useState<FilterType>('all');
 
+  useEffect(() => {
+    refreshQueueRank();
+  }, [refreshQueueRank]);
+
   const myPlots = currentRole === 'farmer'
-    ? mockPlots.filter(p => p.farmerId === user?.id)
-    : mockPlots;
+    ? plots.filter(p => p.farmerId === user?.id)
+    : plots;
 
   const filteredPlots = myPlots.filter(p => {
     switch (filter) {

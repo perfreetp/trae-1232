@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { mockOrders } from '../../data/mockOrders';
 import { useUserStore } from '../../store/userStore';
+import { useAppStore } from '../../store/appStore';
 
 const ratingLabels = ['差', '一般', '中等', '良好', '优秀'];
 const defaultTags = [
@@ -15,13 +15,57 @@ const defaultTags = [
 const SettlementPage: React.FC = () => {
   const router = useRouter();
   const { currentRole } = useUserStore();
-  const order = mockOrders.find(o => o.id === router.params.id) || mockOrders[5];
+  const { getOrder, updateOrder } = useAppStore();
+  const order = getOrder(router.params.id) || useAppStore.getState().orders[useAppStore.getState().orders.length - 1];
 
-  const [payMethod, setPayMethod] = useState('wechat');
-  const [ratings, setRatings] = useState({ overall: 5, speed: 5, quality: 5, attitude: 5 });
-  const [tags, setTags] = useState<string[]>(['效率高', '收割干净', '服务态度好']);
-  const [comment, setComment] = useState('非常专业的机手，准时到达，收割干净，秸秆处理也到位，明年继续合作！');
-  const [paid, setPaid] = useState(order.status === 'settled');
+  const area = useMemo(() => order?.workRecord?.actualArea ?? order?.area ?? 0, [order]);
+  const unitPrice = useMemo(() => order?.quotedPrice ?? 0, [order]);
+  const baseTotal = useMemo(() => Math.round(area * unitPrice * 100) / 100, [area, unitPrice]);
+  const fuelCost = useMemo(() => order?.workRecord?.fuelCost ?? 0, [order]);
+  const debtAmount = useMemo(() => order?.workRecord?.debtAmount ?? 0, [order]);
+  const actualPay = useMemo(() => Math.round((baseTotal + fuelCost - debtAmount) * 100) / 100, [baseTotal, fuelCost, debtAmount]);
+
+  const orderNo = useMemo(() => order?.id ?? '', [order]);
+  const plotAddress = useMemo(() => order?.plot?.address ?? '', [order]);
+
+  const initialPayMethod = useMemo(() => {
+    const pm = (order as any)?.paymentMethod;
+    return pm || 'wechat';
+  }, [order]);
+
+  const initialRatings = useMemo(() => {
+    const ev = order?.evaluation;
+    if (ev) {
+      return {
+        overall: ev.rating ?? 5,
+        speed: ev.punctuality ?? 5,
+        quality: ev.quality ?? 5,
+        attitude: ev.attitude ?? 5
+      };
+    }
+    return { overall: 5, speed: 5, quality: 5, attitude: 5 };
+  }, [order]);
+
+  const initialTags = useMemo(() => {
+    const ev = (order?.evaluation as any);
+    if (ev?.tags && Array.isArray(ev.tags) && ev.tags.length > 0) {
+      return ev.tags;
+    }
+    return ['效率高', '收割干净', '服务态度好'];
+  }, [order]);
+
+  const initialComment = useMemo(() => {
+    const ev = order?.evaluation;
+    if (ev?.comment) return ev.comment;
+    return '非常专业的机手，准时到达，收割干净，秸秆处理也到位，明年继续合作！';
+  }, [order]);
+
+  const [payMethod, setPayMethod] = useState(initialPayMethod);
+  const [ratings, setRatings] = useState(initialRatings);
+  const [tags, setTags] = useState<string[]>(initialTags);
+  const [comment, setComment] = useState(initialComment);
+  const [paid, setPaid] = useState(order?.status === 'settled');
+  const [reviewSubmitted, setReviewSubmitted] = useState(!!order?.evaluation);
 
   const toggleTag = (t: string) => {
     setTags(tags.includes(t) ? tags.filter(x => x !== t) : [...tags, t]);
@@ -31,34 +75,70 @@ const SettlementPage: React.FC = () => {
     setRatings({ ...ratings, [k]: v });
   };
 
+  const handleSelectPayMethod = (method: string) => {
+    setPayMethod(method);
+    if (order?.id) {
+      updateOrder(order.id, { paymentMethod: method } as any);
+    }
+  };
+
   const pay = () => {
-    console.log('[Settlement] 支付:', payMethod, '金额:', order.totalAmount);
+    if (!order?.id) return;
+    console.log('[Settlement] 支付:', payMethod, '金额:', actualPay);
     Taro.showLoading({ title: '支付中...', mask: true });
     setTimeout(() => {
       Taro.hideLoading();
       setPaid(true);
+      updateOrder(order.id, {
+        status: 'settled',
+        settledAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        paymentMethod: payMethod,
+        totalAmount: actualPay
+      } as any);
       Taro.showToast({ title: '✅ 支付成功', icon: 'success' });
     }, 1000);
   };
 
   const submitReview = () => {
+    if (!order?.id) return;
     console.log('[Settlement] 评价:', { ratings, tags, comment });
     Taro.showLoading({ title: '提交中...', mask: true });
     setTimeout(() => {
       Taro.hideLoading();
+      const evaluation = {
+        id: 'e' + Date.now(),
+        orderId: order.id,
+        rating: ratings.overall,
+        quality: ratings.quality,
+        attitude: ratings.attitude,
+        punctuality: ratings.speed,
+        comment,
+        tags,
+        createdAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
+      };
+      updateOrder(order.id, { evaluation } as any);
+      setReviewSubmitted(true);
       Taro.showToast({ title: '✅ 评价已提交', icon: 'success' });
       setTimeout(() => Taro.switchTab({ url: '/pages/orders/index' }), 1200);
     }, 800);
   };
 
+  if (!order) {
+    return (
+      <View className={styles.pageWrap} style={{ padding: 40, alignItems: 'center', justifyContent: 'center' }}>
+        <Text>订单不存在</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className={styles.pageWrap} scrollY>
       <View className={styles.header}>
-        <Text className={styles.orderNo}>订单号 {order.orderNo}</Text>
+        <Text className={styles.orderNo}>订单号 {orderNo}</Text>
         <Text className={styles.title}>{paid ? '✅ 结算完成' : '💰 待结算金额'}</Text>
         <View className={styles.amountWrap}>
           <Text className={styles.amountPrefix}>¥</Text>
-          <Text className={styles.amount}>{order.totalAmount}</Text>
+          <Text className={styles.amount}>{actualPay}</Text>
         </View>
       </View>
 
@@ -79,34 +159,30 @@ const SettlementPage: React.FC = () => {
             <Text className={styles.cardHeaderTitle}>费用明细</Text>
           </View>
           <View className={styles.infoRow}>
+            <Text className={styles.infoLabel}>地块地址</Text>
+            <Text className={styles.infoValue}>{plotAddress}</Text>
+          </View>
+          <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>作业亩数</Text>
-            <Text className={styles.infoValue}>{order.workRecord?.confirmedArea || order.area} 亩 × ¥{order.unitPrice}</Text>
+            <Text className={styles.infoValue}>{area} 亩 × ¥{unitPrice}</Text>
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>基础费用</Text>
-            <Text className={styles.infoValue}>¥{((order.workRecord?.confirmedArea || order.area) * order.unitPrice).toFixed(0)}</Text>
+            <Text className={styles.infoValue}>¥{baseTotal}</Text>
           </View>
-          {order.otherFees?.map((f, i) => (
-            <View key={i} className={styles.infoRow}>
-              <Text className={styles.infoLabel}>{f.label}</Text>
-              <Text className={styles.infoValue}>¥{f.amount}</Text>
-            </View>
-          ))}
-          {order.discount ? (
-            <View className={styles.infoRow}>
-              <Text className={styles.infoLabel}>优惠</Text>
-              <Text className={styles.infoValue} style={{ color: '#10B981' }}>-¥{order.discount}</Text>
-            </View>
-          ) : null}
-          {order.workRecord?.debtAmount ? (
+          <View className={styles.infoRow}>
+            <Text className={styles.infoLabel}>油费</Text>
+            <Text className={styles.infoValue}>¥{fuelCost}</Text>
+          </View>
+          {debtAmount > 0 ? (
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel} style={{ color: '#EF4444' }}>已减欠款</Text>
-              <Text className={styles.infoValue} style={{ color: '#10B981' }}>-¥{order.workRecord.debtAmount}</Text>
+              <Text className={styles.infoValue} style={{ color: '#10B981' }}>-¥{debtAmount}</Text>
             </View>
           ) : null}
           <View className={classnames(styles.infoRow, styles.totalRow)}>
             <Text className={styles.infoLabel}>应付总额</Text>
-            <Text className={styles.infoValue}>¥{order.totalAmount}</Text>
+            <Text className={styles.infoValue}>¥{actualPay}</Text>
           </View>
         </View>
 
@@ -119,28 +195,28 @@ const SettlementPage: React.FC = () => {
             <View className={styles.payMethods}>
               <View
                 className={classnames(styles.payMethod, payMethod === 'wechat' && styles.active)}
-                onClick={() => setPayMethod('wechat')}
+                onClick={() => handleSelectPayMethod('wechat')}
               >
                 <Text className={styles.payIcon}>💚</Text>
                 <Text className={styles.payName}>微信</Text>
               </View>
               <View
                 className={classnames(styles.payMethod, payMethod === 'alipay' && styles.active)}
-                onClick={() => setPayMethod('alipay')}
+                onClick={() => handleSelectPayMethod('alipay')}
               >
                 <Text className={styles.payIcon}>💙</Text>
                 <Text className={styles.payName}>支付宝</Text>
               </View>
               <View
                 className={classnames(styles.payMethod, payMethod === 'cash' && styles.active)}
-                onClick={() => setPayMethod('cash')}
+                onClick={() => handleSelectPayMethod('cash')}
               >
                 <Text className={styles.payIcon}>💴</Text>
                 <Text className={styles.payName}>现金</Text>
               </View>
               <View
                 className={classnames(styles.payMethod, payMethod === 'card' && styles.active)}
-                onClick={() => setPayMethod('card')}
+                onClick={() => handleSelectPayMethod('card')}
               >
                 <Text className={styles.payIcon}>💳</Text>
                 <Text className={styles.payName}>银行卡</Text>
@@ -152,7 +228,9 @@ const SettlementPage: React.FC = () => {
         <View className={styles.card}>
           <View className={styles.cardHeader}>
             <Text className={styles.cardHeaderIcon}>⭐</Text>
-            <Text className={styles.cardHeaderTitle}>服务评价</Text>
+            <Text className={styles.cardHeaderTitle}>
+              服务评价{reviewSubmitted ? '（已提交）' : ''}
+            </Text>
           </View>
 
           <View className={styles.ratingSection}>
@@ -169,7 +247,7 @@ const SettlementPage: React.FC = () => {
                     <Text
                       key={n}
                       className={classnames(styles.star, n <= ratings[r.key as keyof typeof ratings] && styles.active)}
-                      onClick={() => setRating(r.key, n)}
+                      onClick={() => !reviewSubmitted && setRating(r.key, n)}
                     >★</Text>
                   ))}
                 </View>
@@ -187,7 +265,7 @@ const SettlementPage: React.FC = () => {
                 <Text
                   key={t}
                   className={classnames(styles.tag, tags.includes(t) && styles.active)}
-                  onClick={() => toggleTag(t)}
+                  onClick={() => !reviewSubmitted && toggleTag(t)}
                 >{t}</Text>
               ))}
             </View>
@@ -196,10 +274,11 @@ const SettlementPage: React.FC = () => {
           <View className={styles.commentBox}>
             <Textarea
               value={comment}
-              onInput={(e: any) => setComment(e.detail.value)}
+              onInput={(e: any) => !reviewSubmitted && setComment(e.detail.value)}
               placeholder="说说您对本次抢收服务的体验吧..."
               style={{ width: '100%', minHeight: 140, fontSize: 26, lineHeight: 1.5 }}
               maxlength={300}
+              disabled={reviewSubmitted}
             />
           </View>
         </View>
@@ -212,7 +291,7 @@ const SettlementPage: React.FC = () => {
               <Text className={styles.btnText}>稍后</Text>
             </View>
             <View className={classnames(styles.btn, styles.primary)} onClick={pay}>
-              <Text className={styles.btnText}>立即支付 ¥{order.totalAmount}</Text>
+              <Text className={styles.btnText}>立即支付 ¥{actualPay}</Text>
             </View>
           </>
         ) : (
@@ -220,8 +299,11 @@ const SettlementPage: React.FC = () => {
             <View className={classnames(styles.btn, styles.ghost)} onClick={() => Taro.switchTab({ url: '/pages/orders/index' })}>
               <Text className={styles.btnText}>跳过</Text>
             </View>
-            <View className={classnames(styles.btn, styles.secondary)} onClick={submitReview}>
-              <Text className={styles.btnText}>提交评价</Text>
+            <View
+              className={classnames(styles.btn, reviewSubmitted ? styles.ghost : styles.secondary)}
+              onClick={!reviewSubmitted ? submitReview : undefined}
+            >
+              <Text className={styles.btnText}>{reviewSubmitted ? '已评价' : '提交评价'}</Text>
             </View>
           </>
         )}

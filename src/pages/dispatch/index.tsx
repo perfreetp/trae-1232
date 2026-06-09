@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { mockQueue, mockNotices } from '../../data/mockWeather';
-import { mockPlots } from '../../data/mockPlots';
+import { useAppStore } from '../../store/appStore';
 import { QueueItem, MaturityLevel } from '../../types';
 
 const villages = [
@@ -23,7 +22,15 @@ const maturityLabel: Record<MaturityLevel, string> = {
 
 const DispatchPage: React.FC = () => {
   const [village, setVillage] = useState('all');
-  const [queue, setQueue] = useState<QueueItem[]>(mockQueue);
+  const queue = useAppStore(s => s.queue);
+  const notices = useAppStore(s => s.notices);
+  const moveQueueItem = useAppStore(s => s.moveQueueItem);
+  const togglePriority = useAppStore(s => s.togglePriority);
+  const refreshQueueRank = useAppStore(s => s.refreshQueueRank);
+
+  useEffect(() => {
+    refreshQueueRank();
+  }, [refreshQueueRank]);
 
   const filteredQueue = village === 'all'
     ? queue
@@ -34,37 +41,26 @@ const DispatchPage: React.FC = () => {
   const totalArea = queue.reduce((s, q) => s + q.area, 0);
   const overripeCount = queue.filter(q => q.maturity === 'overripe').length;
 
-  const handleMoveUp = (idx: number) => {
-    if (idx <= 0 || filteredQueue[idx].status === 'current') return;
-    const newQueue = [...queue];
-    const q = filteredQueue[idx];
-    const realIdx = newQueue.findIndex(x => x.id === q.id);
-    const prevQ = filteredQueue[idx - 1];
-    const prevRealIdx = newQueue.findIndex(x => x.id === prevQ.id);
-    if (prevQ.status !== 'current') {
-      [newQueue[realIdx], newQueue[prevRealIdx]] = [newQueue[prevRealIdx], newQueue[realIdx]];
-      setQueue(newQueue);
-      Taro.showToast({ title: '已上移', icon: 'success' });
-      console.log('[Dispatch] 上移排队:', q.farmerName);
-    }
+  const handleMoveUp = (q: QueueItem) => {
+    if (q.status === 'current') return;
+    moveQueueItem(q.id, 'up');
+    Taro.showToast({ title: '已上移', icon: 'success' });
   };
 
-  const handleMoveDown = (idx: number) => {
-    if (idx >= filteredQueue.length - 1 || filteredQueue[idx].status === 'current') return;
-    const newQueue = [...queue];
-    const q = filteredQueue[idx];
-    const realIdx = newQueue.findIndex(x => x.id === q.id);
-    const nextQ = filteredQueue[idx + 1];
-    const nextRealIdx = newQueue.findIndex(x => x.id === nextQ.id);
-    [newQueue[realIdx], newQueue[nextRealIdx]] = [newQueue[nextRealIdx], newQueue[realIdx]];
-    setQueue(newQueue);
+  const handleMoveDown = (q: QueueItem) => {
+    if (q.status === 'current') return;
+    moveQueueItem(q.id, 'down');
     Taro.showToast({ title: '已下移', icon: 'success' });
   };
 
+  const handleMoveTop = (q: QueueItem) => {
+    moveQueueItem(q.id, 'top');
+    Taro.showToast({ title: '已置顶', icon: 'success' });
+  };
+
   const handleTogglePriority = (id: string) => {
-    const newQueue = queue.map(q => q.id === id ? { ...q, priority: !q.priority } : q);
-    setQueue(newQueue);
     const item = queue.find(q => q.id === id);
+    togglePriority(id);
     Taro.showToast({ title: item?.priority ? '已取消优先' : '已设为优先', icon: 'success' });
   };
 
@@ -171,21 +167,27 @@ const DispatchPage: React.FC = () => {
               <View className={styles.queueActions}>
                 <View
                   className={classnames(styles.miniBtn, styles.up)}
-                  onClick={() => handleMoveUp(idx)}
+                  onClick={() => handleMoveUp(q)}
                 >
                   <Text className={styles.miniBtnText}>↑上移</Text>
                 </View>
                 <View
                   className={classnames(styles.miniBtn, styles.down)}
-                  onClick={() => handleMoveDown(idx)}
+                  onClick={() => handleMoveDown(q)}
                 >
                   <Text className={styles.miniBtnText}>↓下移</Text>
                 </View>
                 <View
                   className={classnames(styles.miniBtn, styles.priority)}
+                  onClick={() => handleMoveTop(q)}
+                >
+                  <Text className={styles.miniBtnText}>置顶</Text>
+                </View>
+                <View
+                  className={classnames(styles.miniBtn, styles.priority)}
                   onClick={() => handleTogglePriority(q.id)}
                 >
-                  <Text className={styles.miniBtnText}>{q.priority ? '取消' : '优先'}</Text>
+                  <Text className={styles.miniBtnText}>{q.priority ? '取消优先' : '设为优先'}</Text>
                 </View>
               </View>
             </View>
@@ -199,7 +201,7 @@ const DispatchPage: React.FC = () => {
               <Text className={styles.sectionTitleText}>最新通知</Text>
             </View>
           </View>
-          {mockNotices.slice(0, 3).map(n => (
+          {notices.slice(0, 3).map(n => (
             <View key={n.id} className={styles.noticeCard}>
               <View className={styles.noticeCardHeader}>
                 <View className={classnames(styles.noticeTypeTag, n.type)}>

@@ -3,9 +3,9 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { mockOrders } from '../../data/mockOrders';
 import { OrderStatus } from '../../types';
 import { useUserStore } from '../../store/userStore';
+import { useAppStore } from '../../store/appStore';
 
 const statusConfig: Record<OrderStatus, { title: string; desc: string }> = {
   pending: { title: '⏳ 等待机手接单', desc: '村级协调员正在调度，请耐心等候匹配' },
@@ -16,23 +16,63 @@ const statusConfig: Record<OrderStatus, { title: string; desc: string }> = {
   settled: { title: '🎉 订单已完成', desc: '订单已结算完毕，感谢您的信任与支持' },
 };
 
+const calcWorkHours = (startTime?: string, endTime?: string): string => {
+  if (!startTime || !endTime) return '—';
+  const s = new Date(startTime.replace(' ', 'T')).getTime();
+  const e = new Date(endTime.replace(' ', 'T')).getTime();
+  if (isNaN(s) || isNaN(e) || e <= s) return '—';
+  const hours = (e - s) / (1000 * 60 * 60);
+  return hours.toFixed(1);
+};
+
+const safeNum = (v: number | undefined | null, fallback = 0): number => {
+  const n = Number(v);
+  return isNaN(n) ? fallback : n;
+};
+
+const safeStr = (v: string | undefined | null, fallback = '—'): string => {
+  return v && v.trim() ? v : fallback;
+};
+
 const OrderDetailPage: React.FC = () => {
   const router = useRouter();
   const { currentRole } = useUserStore();
-  const order = mockOrders.find(o => o.id === router.params.id) || mockOrders[0];
+  const getOrder = useAppStore(state => state.getOrder);
+
+  const orderId = router.params.id || '';
+  const order = getOrder(orderId);
+
+  if (!order) {
+    return (
+      <View className={styles.pageWrap} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <Text style={{ color: '#6B7280', fontSize: 32 }}>订单不存在</Text>
+      </View>
+    );
+  }
+
   const sc = statusConfig[order.status];
+  const createdAt = safeStr(order.plot.createdAt || order.demand.createdAt);
+  const actualArea = safeNum(order.workRecord?.actualArea, order.area);
+  const workHours = order.workRecord ? calcWorkHours(order.workRecord.startTime, order.workRecord.endTime) : '—';
+  const fuelCost = safeNum(order.workRecord?.fuelCost);
+  const debtAmount = safeNum(order.workRecord?.debtAmount);
+  const evaluation = order.evaluation;
+  const rating = safeNum(evaluation?.rating);
+  const baseFee = Math.round(safeNum(actualArea) * safeNum(order.quotedPrice));
+  const totalAmount = Math.round(safeNum(order.totalAmount)) || baseFee;
 
   const timeline = [
-    { title: '抢收需求已发起', time: order.createdAt, active: true },
-    { title: '村级协调员受理', time: order.createdAt, active: order.status !== 'pending' },
+    { title: '抢收需求已发起', time: createdAt, active: true },
+    { title: '村级协调员受理', time: createdAt, active: order.status !== 'pending' },
     { title: '机手已接单', time: order.acceptedAt || '', active: ['accepted', 'working', 'submitted', 'confirmed', 'settled'].includes(order.status) },
-    { title: '开始作业', time: order.workStartedAt || '', active: ['working', 'submitted', 'confirmed', 'settled'].includes(order.status) },
-    { title: '作业完成提交', time: order.workCompletedAt || '', active: ['submitted', 'confirmed', 'settled'].includes(order.status) },
-    { title: '农户确认亩数', time: order.workCompletedAt || '', active: ['confirmed', 'settled'].includes(order.status) },
+    { title: '开始作业', time: order.startedAt || '', active: ['working', 'submitted', 'confirmed', 'settled'].includes(order.status) },
+    { title: '作业完成提交', time: order.completedAt || '', active: ['submitted', 'confirmed', 'settled'].includes(order.status) },
+    { title: '农户确认亩数', time: order.workRecord?.confirmedAt || order.completedAt || '', active: ['confirmed', 'settled'].includes(order.status) },
     { title: '结算完成', time: order.settledAt || '', active: order.status === 'settled' },
   ].filter(t => t.time);
 
   const handleCall = (phone: string) => {
+    if (!phone) return;
     console.log('[OrderDetail] 拨打:', phone);
     Taro.makePhoneCall({ phoneNumber: phone }).catch(() => {});
   };
@@ -56,31 +96,31 @@ const OrderDetailPage: React.FC = () => {
     switch (status) {
       case 'pending':
         return [
-          { text: '📞 联系协调员', type: 'outline', onClick: () => handleCall('13800000000') },
-          { text: '取消需求', type: 'ghost', onClick: () => Taro.showToast({ title: '已申请取消', icon: 'none' }) },
+          { text: '📞 联系协调员', type: 'outline' as const, onClick: () => handleCall('13800000000') },
+          { text: '取消需求', type: 'ghost' as const, onClick: () => Taro.showToast({ title: '已申请取消', icon: 'none' }) },
         ];
       case 'accepted':
         return [
-          { text: '📞 联系机手', type: 'outline', onClick: () => handleCall(order.operatorPhone) },
-          { text: '💰 预付订金', type: 'primary', onClick: () => handleAction('settle') },
+          { text: '📞 联系机手', type: 'outline' as const, onClick: () => handleCall(order.operatorPhone) },
+          { text: '💰 预付订金', type: 'primary' as const, onClick: () => handleAction('settle') },
         ];
       case 'submitted':
         return [
-          { text: '❌ 有异议', type: 'outline', onClick: () => Taro.showToast({ title: '已通知协调员', icon: 'none' }) },
-          { text: '✅ 确认作业', type: 'primary', onClick: () => handleAction('confirmWork') },
+          { text: '❌ 有异议', type: 'outline' as const, onClick: () => Taro.showToast({ title: '已通知协调员', icon: 'none' }) },
+          { text: '✅ 确认作业', type: 'primary' as const, onClick: () => handleAction('confirmWork') },
         ];
       case 'confirmed':
         return [
-          { text: '去评价', type: 'primary', onClick: () => handleAction('settle') },
+          { text: '去评价', type: 'primary' as const, onClick: () => handleAction('settle') },
         ];
       case 'settled':
         return [
-          { text: '再次抢收', type: 'primary', onClick: () => Taro.switchTab({ url: '/pages/plots/index' }) },
+          { text: '再次抢收', type: 'primary' as const, onClick: () => Taro.switchTab({ url: '/pages/plots/index' }) },
         ];
       default:
         return [
-          { text: '📞 联系机手', type: 'outline', onClick: () => handleCall(order.operatorPhone) },
-          { text: '联系客服', type: 'ghost', onClick: () => Taro.showToast({ title: '客服开发中', icon: 'none' }) },
+          { text: '📞 联系机手', type: 'outline' as const, onClick: () => handleCall(order.operatorPhone) },
+          { text: '联系客服', type: 'ghost' as const, onClick: () => Taro.showToast({ title: '客服开发中', icon: 'none' }) },
         ];
     }
   };
@@ -89,24 +129,24 @@ const OrderDetailPage: React.FC = () => {
     switch (status) {
       case 'pending':
         return [
-          { text: '📨 转派他人', type: 'outline', onClick: () => handleAction('transfer') },
-          { text: '🚜 立即接单', type: 'primary', onClick: () => handleAction('accept') },
+          { text: '📨 转派他人', type: 'outline' as const, onClick: () => handleAction('transfer') },
+          { text: '🚜 立即接单', type: 'primary' as const, onClick: () => handleAction('accept') },
         ];
       case 'accepted':
         return [
-          { text: '📞 联系农户', type: 'outline', onClick: () => handleCall(order.farmerPhone) },
-          { text: '🧭 导航前往', type: 'secondary', onClick: () => Taro.showToast({ title: '导航开发中', icon: 'none' }) },
-          { text: '开始作业', type: 'primary', onClick: () => handleAction('startWork') },
+          { text: '📞 联系农户', type: 'outline' as const, onClick: () => handleCall(order.farmerPhone) },
+          { text: '🧭 导航前往', type: 'secondary' as const, onClick: () => Taro.showToast({ title: '导航开发中', icon: 'none' }) },
+          { text: '开始作业', type: 'primary' as const, onClick: () => handleAction('startWork') },
         ];
       case 'working':
         return [
-          { text: '📞 联系农户', type: 'outline', onClick: () => handleCall(order.farmerPhone) },
-          { text: '完成作业', type: 'primary', onClick: () => handleAction('submitWork') },
+          { text: '📞 联系农户', type: 'outline' as const, onClick: () => handleCall(order.farmerPhone) },
+          { text: '完成作业', type: 'primary' as const, onClick: () => handleAction('submitWork') },
         ];
       default:
         return [
-          { text: '📞 联系农户', type: 'outline', onClick: () => handleCall(order.farmerPhone) },
-          { text: '查看评价', type: 'primary', onClick: () => handleAction('settle') },
+          { text: '📞 联系农户', type: 'outline' as const, onClick: () => handleCall(order.farmerPhone) },
+          { text: '查看评价', type: 'primary' as const, onClick: () => handleAction('settle') },
         ];
     }
   };
@@ -143,24 +183,24 @@ const OrderDetailPage: React.FC = () => {
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>订单号</Text>
-            <Text className={styles.infoValue}>{order.orderNo}</Text>
+            <Text className={styles.infoValue}>{order.id}</Text>
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>详细地址</Text>
-            <Text className={styles.infoValue}>{order.plotAddress}</Text>
+            <Text className={styles.infoValue}>{safeStr(order.plot.address)}</Text>
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>种植面积</Text>
-            <Text className={styles.infoValue}>{order.area} 亩</Text>
+            <Text className={styles.infoValue}>{safeNum(order.area)} 亩</Text>
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>可进地</Text>
-            <Text className={styles.infoValue}>{order.availableTime}</Text>
+            <Text className={styles.infoValue}>{safeStr(order.scheduledTime)}</Text>
           </View>
-          {order.remark && (
+          {order.plot.note && (
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel}>备注</Text>
-              <Text className={styles.infoValue}>{order.remark}</Text>
+              <Text className={styles.infoValue}>{safeStr(order.plot.note)}</Text>
             </View>
           )}
         </View>
@@ -173,20 +213,20 @@ const OrderDetailPage: React.FC = () => {
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>农户</Text>
             <View className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text>{order.farmerName} · {order.farmerPhone}</Text>
+              <Text>{safeStr(order.farmerName)} · {safeStr(order.farmerPhone)}</Text>
               <Text onClick={() => handleCall(order.farmerPhone)} style={{ color: '#F59E0B' }}>📞</Text>
             </View>
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>机手</Text>
             <View className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text>{order.operatorName} · {order.operatorPhone}</Text>
+              <Text>{safeStr(order.operatorName)} · {safeStr(order.operatorPhone)}</Text>
               <Text onClick={() => handleCall(order.operatorPhone)} style={{ color: '#F59E0B' }}>📞</Text>
             </View>
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>收割机</Text>
-            <Text className={styles.infoValue}>{order.machineName}</Text>
+            <Text className={styles.infoValue}>{safeStr(order.machineName)}</Text>
           </View>
         </View>
 
@@ -199,19 +239,25 @@ const OrderDetailPage: React.FC = () => {
             </View>
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel}>确认亩数</Text>
-              <Text className={styles.infoValue}>{order.workRecord.confirmedArea} 亩{order.workRecord.confirmedArea !== order.area && <Text style={{ color: '#F59E0B', marginLeft: 8 }}>（原 {order.area} 亩）</Text>}</Text>
+              <Text className={styles.infoValue}>
+                {actualArea} 亩
+                {actualArea !== safeNum(order.area) && <Text style={{ color: '#F59E0B', marginLeft: 8 }}>（原 {safeNum(order.area)} 亩）</Text>}
+              </Text>
             </View>
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel}>作业用时</Text>
-              <Text className={styles.infoValue}>{order.workRecord.workHours} 小时</Text>
+              <Text className={styles.infoValue}>{workHours} 小时</Text>
             </View>
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel}>油费备注</Text>
-              <Text className={styles.infoValue}>¥{order.workRecord.fuelCost}</Text>
+              <Text className={styles.infoValue}>
+                ¥{fuelCost}
+                {order.workRecord.fuelNote ? `（${order.workRecord.fuelNote}）` : ''}
+              </Text>
             </View>
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel}>补充说明</Text>
-              <Text className={styles.infoValue}>{order.workRecord.notes || '作业顺利完成'}</Text>
+              <Text className={styles.infoValue}>{safeStr(order.workRecord.note, '作业顺利完成')}</Text>
             </View>
             {order.workRecord.photos?.length ? (
               <>
@@ -225,12 +271,12 @@ const OrderDetailPage: React.FC = () => {
                 </View>
               </>
             ) : null}
-            {order.workRecord.debtAmount ? (
+            {debtAmount > 0 && (
               <View className={styles.debtRow}>
-                <Text className={styles.debtLabel}>⚠️ 待补欠款</Text>
-                <Text className={styles.debtValue}>¥{order.workRecord.debtAmount}</Text>
+                <Text className={styles.debtLabel}>⚠️ 待补欠款{order.workRecord.debtNote ? `（${order.workRecord.debtNote}）` : ''}</Text>
+                <Text className={styles.debtValue}>¥{debtAmount}</Text>
               </View>
-            ) : null}
+            )}
           </View>
         )}
 
@@ -241,35 +287,29 @@ const OrderDetailPage: React.FC = () => {
           </View>
           <View className={styles.priceRow}>
             <Text className={styles.priceLabel}>作业单价</Text>
-            <Text className={styles.priceValue}>¥{order.unitPrice} / 亩</Text>
+            <Text className={styles.priceValue}>¥{safeNum(order.quotedPrice)} / 亩</Text>
           </View>
           <View className={styles.priceRow}>
             <Text className={styles.priceLabel}>作业亩数</Text>
-            <Text className={styles.priceValue}>× {order.workRecord?.confirmedArea || order.area} 亩</Text>
+            <Text className={styles.priceValue}>× {actualArea} 亩</Text>
           </View>
           <View className={styles.priceRow}>
             <Text className={styles.priceLabel}>基础作业费</Text>
-            <Text className={styles.priceValue}>¥{((order.workRecord?.confirmedArea || order.area) * order.unitPrice).toFixed(0)}</Text>
+            <Text className={styles.priceValue}>¥{baseFee}</Text>
           </View>
-          {order.otherFees?.map((f, i) => (
-            <View key={i} className={styles.priceRow}>
-              <Text className={styles.priceLabel}>{f.label}</Text>
-              <Text className={styles.priceValue}>¥{f.amount}</Text>
-            </View>
-          ))}
-          {order.discount ? (
+          {fuelCost > 0 && (
             <View className={styles.priceRow}>
-              <Text className={styles.priceLabel}>优惠减免</Text>
-              <Text className={styles.priceValue} style={{ color: '#10B981' }}>-¥{order.discount}</Text>
+              <Text className={styles.priceLabel}>油费</Text>
+              <Text className={styles.priceValue}>¥{fuelCost}</Text>
             </View>
-          ) : null}
+          )}
           <View className={classnames(styles.priceRow, styles.totalRow)}>
             <Text className={styles.priceLabel}>应付总额</Text>
-            <Text className={styles.priceValue}>¥{order.totalAmount}</Text>
+            <Text className={styles.priceValue}>¥{totalAmount}</Text>
           </View>
         </View>
 
-        {order.review ? (
+        {evaluation && (
           <View className={styles.card}>
             <View className={styles.cardHeader}>
               <Text className={styles.cardHeaderIcon}>⭐</Text>
@@ -277,13 +317,13 @@ const OrderDetailPage: React.FC = () => {
             </View>
             <View className={styles.starRow}>
               {[1,2,3,4,5].map(i => (
-                <Text key={i} className={styles.star}>{i <= (order.review?.rating || 0) ? '⭐' : '☆'}</Text>
+                <Text key={i} className={styles.star}>{i <= rating ? '⭐' : '☆'}</Text>
               ))}
-              <Text style={{ marginLeft: 12, color: '#9CA3AF', fontSize: 24 }}>{order.review?.createdAt?.slice(0,10) || ''}</Text>
+              <Text style={{ marginLeft: 12, color: '#9CA3AF', fontSize: 24 }}>{evaluation.createdAt?.slice(0,10) || ''}</Text>
             </View>
-            <Text className={styles.commentText}>{order.review.comment || '服务非常满意！'}</Text>
+            <Text className={styles.commentText}>{safeStr(evaluation.comment, '服务非常满意！')}</Text>
           </View>
-        ) : null}
+        )}
       </View>
 
       <View className={styles.bottomBar}>

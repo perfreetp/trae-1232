@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Input, Textarea } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { mockPlots } from '../../data/mockPlots';
+import { useAppStore } from '../../store/appStore';
 import { MaturityLevel } from '../../types';
 
 const maturityOptions: { key: MaturityLevel; label: string; cls: string }[] = [
@@ -15,21 +15,23 @@ const maturityOptions: { key: MaturityLevel; label: string; cls: string }[] = [
 
 const DemandPublishPage: React.FC = () => {
   const router = useRouter();
+  const plots = useAppStore(s => s.plots);
+  const publishDemand = useAppStore(s => s.publishDemand);
   const defaultPlot = router.params.plotId
-    ? mockPlots.find(p => p.id === router.params.plotId)
-    : mockPlots[0];
+    ? plots.find(p => p.id === router.params.plotId)
+    : plots.find(p => !p.hasDemand) || plots[0];
 
   const [form, setForm] = useState({
-    plotId: defaultPlot?.id || 'plot01',
+    plotId: defaultPlot?.id || 'p001',
     area: defaultPlot?.area || 8.5,
     maturity: defaultPlot?.maturity || 'mature' as MaturityLevel,
     contactName: defaultPlot?.contactName || '张丰收',
     contactPhone: defaultPlot?.contactPhone || '13812345678',
     startTime: '今日',
-    endTime: '3日内',
-    address: defaultPlot?.address || '红星村一组东大田',
-    remark: defaultPlot?.remark || '',
+    address: defaultPlot?.address || '红星村三组东头麦田',
+    remark: defaultPlot?.note || '',
   });
+  const [priority, setPriority] = useState(false);
   const [agreed, setAgreed] = useState(true);
 
   const submit = () => {
@@ -37,13 +39,24 @@ const DemandPublishPage: React.FC = () => {
       Taro.showToast({ title: '请先阅读并同意协议', icon: 'none' });
       return;
     }
-    console.log('[DemandPublish] 提交:', form);
     Taro.showLoading({ title: '提交中...', mask: true });
+    const result = publishDemand({
+      plotId: form.plotId,
+      area: form.area,
+      maturity: form.maturity,
+      note: form.remark || undefined,
+      availableTime: form.startTime === '今日' ? '2026-06-10 08:00' : form.startTime === '明日' ? '2026-06-11 08:00' : form.startTime === '2日内' ? '2026-06-12 08:00' : '2026-06-13 08:00',
+      priority,
+    });
     setTimeout(() => {
       Taro.hideLoading();
-      Taro.showToast({ title: '✅ 抢收需求已发起', icon: 'success' });
-      setTimeout(() => Taro.navigateBack(), 1200);
-    }, 800);
+      if (result) {
+        Taro.showToast({ title: `✅ 已排队第 ${result.queuePosition} 名`, icon: 'success' });
+      } else {
+        Taro.showToast({ title: '✅ 抢收需求已发起', icon: 'success' });
+      }
+      setTimeout(() => Taro.navigateBack(), 1400);
+    }, 700);
   };
 
   return (

@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { mockPlots } from '../../data/mockPlots';
-import { mockQueue } from '../../data/mockWeather';
+import { useAppStore } from '../../store/appStore';
 import { MaturityLevel } from '../../types';
 
 const maturityLabel: Record<MaturityLevel, string> = {
@@ -18,26 +17,49 @@ const maturityClass: Record<MaturityLevel, string> = {
 
 const PlotDetailPage: React.FC = () => {
   const router = useRouter();
-  const plot = mockPlots.find(p => p.id === router.params.id) || mockPlots[0];
-  const queueItem = mockQueue.find(q => q.plotId === plot.id);
+  const plots = useAppStore(s => s.plots);
+  const queue = useAppStore(s => s.queue);
+  const orders = useAppStore(s => s.orders);
+  const refreshQueueRank = useAppStore(s => s.refreshQueueRank);
 
-  const queueIdx = queueItem ? mockQueue.indexOf(queueItem) : -1;
-  const totalQueue = mockQueue.length;
+  useEffect(() => {
+    refreshQueueRank();
+  }, [refreshQueueRank]);
+
+  const plot = plots.find(p => p.id === router.params.id) || plots[0];
+  const queueItem = plot?.demandId ? queue.find(q => q.demandId === plot.demandId) : undefined;
+  const queueIdx = queueItem ? queue.findIndex(q => q.id === queueItem.id) : -1;
+  const totalQueue = queue.length;
   const progress = queueIdx >= 0 ? ((queueIdx + 1) / totalQueue * 100) : 0;
+  const boundOrder = plot?.demandId ? orders.find(o => o.demandId === plot.demandId) : undefined;
 
   const handleCall = () => {
-    console.log('[PlotDetail] 拨打:', plot.contactPhone);
     Taro.makePhoneCall({ phoneNumber: plot.contactPhone }).catch(() => {});
   };
 
   const handleNavi = () => {
     Taro.showToast({ title: '导航功能开发中', icon: 'none' });
-    console.log('[PlotDetail] 导航到:', plot.address);
   };
 
   const handleDemand = () => {
     Taro.navigateTo({ url: '/pages/demand-publish/index?plotId=' + plot.id });
   };
+
+  const handleOrder = () => {
+    if (boundOrder) {
+      Taro.navigateTo({ url: '/pages/order-detail/index?id=' + boundOrder.id });
+    } else {
+      Taro.switchTab({ url: '/pages/orders/index' });
+    }
+  };
+
+  if (!plot) {
+    return (
+      <View className={styles.pageWrap}>
+        <Text>加载中...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView className={styles.pageWrap} scrollY>
@@ -45,11 +67,11 @@ const PlotDetailPage: React.FC = () => {
         <View className={styles.heroPattern} />
         <Text className={styles.heroTitle}>📍 {plot.address}</Text>
         <View className={styles.heroTags}>
-          <View className={styles.heroTag}>
+          <View className={classnames(styles.heroTag, styles[maturityClass[plot.maturity]])}>
             <Text className={styles.heroTagText}>🌾 {maturityLabel[plot.maturity]}</Text>
           </View>
           {plot.priority && (
-            <View className={styles.heroTag}>
+            <View className={styles.heroTag} style={{ background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>
               <Text className={styles.heroTagText}>⭐ 优先户</Text>
             </View>
           )}
@@ -66,9 +88,9 @@ const PlotDetailPage: React.FC = () => {
           </View>
           <View className={styles.heroStatItem}>
             <Text className={styles.heroStatNum}>
-              {plot.yieldEstimate || 1200}<Text className={styles.heroStatUnit}>斤</Text>
+              {Math.round(plot.area * 550)}<Text className={styles.heroStatUnit}>斤</Text>
             </Text>
-            <Text className={styles.heroStatLabel}>预估亩产</Text>
+            <Text className={styles.heroStatLabel}>预估总产量</Text>
           </View>
         </View>
       </View>
@@ -82,26 +104,30 @@ const PlotDetailPage: React.FC = () => {
             </View>
             <View className={styles.queueRankRow}>
               <View className={styles.queueRankBadge}>
-                <Text className={styles.queueRankNo}>{queueIdx + 1}</Text>
+                <Text className={styles.queueRankNo}>{plot.queuePosition ?? queueIdx + 1}</Text>
                 <Text className={styles.queueRankLabel}>当前名次</Text>
               </View>
               <View className={styles.queueInfo}>
                 <View className={styles.queueInfoRow}>
                   <Text className={styles.queueInfoLabel}>总排队数</Text>
-                  <Text className={styles.queueInfoValue}>{totalQueue} 户</Text>
+                  <Text className={styles.queueInfoValue}>{plot.queueTotal ?? totalQueue} 户</Text>
                 </View>
                 <View className={styles.queueInfoRow}>
-                  <Text className={styles.queueInfoLabel}>预计时间</Text>
+                  <Text className={styles.queueInfoLabel}>预计作业时间</Text>
                   <Text className={styles.queueInfoValue}>{queueItem.estimatedTime}</Text>
                 </View>
                 <View className={styles.queueInfoRow}>
                   <Text className={styles.queueInfoLabel}>所在村组</Text>
-                  <Text className={styles.queueInfoValue}>{queueItem.village}{queueItem.group}</Text>
+                  <Text className={styles.queueInfoValue}>{queueItem.village} {queueItem.group}</Text>
+                </View>
+                <View className={styles.queueInfoRow}>
+                  <Text className={styles.queueInfoLabel}>订单编号</Text>
+                  <Text className={styles.queueInfoValue} style={{ color: '#007aff' }}>{boundOrder?.id.toUpperCase() || '待生成'}</Text>
                 </View>
               </View>
             </View>
             <View className={styles.progressBar}>
-              <View className={styles.progressFill} style={{ width: `${progress}%` }} />
+              <View className={styles.progressFill} style={{ width: `${Math.min(98, progress + 5)}%` }} />
             </View>
             <View className={styles.progressTip}>
               <Text className={styles.progressTipText}>进度 {queueIdx + 1}/{totalQueue}</Text>
@@ -129,17 +155,18 @@ const PlotDetailPage: React.FC = () => {
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>成熟度</Text>
-            <Text className={styles.infoValue}>{maturityLabel[plot.maturity]}
+            <Text className={styles.infoValue}>
+              {maturityLabel[plot.maturity]}
               <Text className={classnames(maturityClass[plot.maturity])} style={{ marginLeft: 8 }}>●</Text>
             </Text>
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>小麦品种</Text>
-            <Text className={styles.infoValue}>{plot.wheatType || '济麦22号'}</Text>
+            <Text className={styles.infoValue}>济麦22号（黄淮主栽）</Text>
           </View>
           <View className={styles.infoRow}>
-            <Text className={styles.infoLabel}>预估产量</Text>
-            <Text className={styles.infoValue}>{plot.yieldEstimate || 1200} 斤/亩</Text>
+            <Text className={styles.infoLabel}>预估亩产</Text>
+            <Text className={styles.infoValue}>约 550 斤/亩（正常年景）</Text>
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>可进地时间</Text>
@@ -147,7 +174,11 @@ const PlotDetailPage: React.FC = () => {
           </View>
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>进地条件</Text>
-            <Text className={styles.infoValue}>{plot.accessCondition || '柏油路直达，机械通行无障碍'}</Text>
+            <Text className={styles.infoValue}>{plot.note ? plot.note : '柏油路直达，机械通行无障碍'}</Text>
+          </View>
+          <View className={styles.infoRow}>
+            <Text className={styles.infoLabel}>地理坐标</Text>
+            <Text className={styles.infoValue}>N {plot.location.lat.toFixed(4)}, E {plot.location.lng.toFixed(4)}</Text>
           </View>
         </View>
 
@@ -168,10 +199,10 @@ const PlotDetailPage: React.FC = () => {
             <Text className={styles.infoLabel}>所在村组</Text>
             <Text className={styles.infoValue}>{plot.village}村委会 {plot.group}</Text>
           </View>
-          {plot.remark && (
+          {plot.note && (
             <View className={styles.infoRow}>
               <Text className={styles.infoLabel}>备注说明</Text>
-              <Text className={styles.infoValue}>{plot.remark}</Text>
+              <Text className={styles.infoValue}>{plot.note}</Text>
             </View>
           )}
         </View>
@@ -189,7 +220,7 @@ const PlotDetailPage: React.FC = () => {
             <Text className={styles.btnText}>🌾 发起抢收</Text>
           </View>
         ) : (
-          <View className={classnames(styles.btn, styles.secondary)} onClick={() => Taro.switchTab({ url: '/pages/orders/index' })}>
+          <View className={classnames(styles.btn, styles.secondary)} onClick={handleOrder}>
             <Text className={styles.btnText}>📦 查看订单</Text>
           </View>
         )}

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useUserStore } from '../../store/userStore';
+import { useAppStore } from '../../store/appStore';
 import { OrderStatus } from '../../types';
-import { mockOrders } from '../../data/mockOrders';
 import OrderCard from '../../components/OrderCard';
 import EmptyState from '../../components/EmptyState';
 
@@ -23,11 +23,17 @@ const statusTabs: { key: TabType; label: string }[] = [
 
 const OrdersPage: React.FC = () => {
   const { user, currentRole } = useUserStore();
+  const orders = useAppStore(s => s.orders);
+  const refreshQueueRank = useAppStore(s => s.refreshQueueRank);
   const [tab, setTab] = useState<TabType>('all');
 
-  const myOrders = mockOrders.filter(o => {
+  useEffect(() => {
+    refreshQueueRank();
+  }, [refreshQueueRank]);
+
+  const myOrders = orders.filter(o => {
     if (currentRole === 'farmer') return o.farmerId === user?.id;
-    if (currentRole === 'operator') return o.operatorId === 'op001';
+    if (currentRole === 'operator') return o.operatorId === 'op001' || o.operatorId === 'op002' || o.operatorId === 'op003';
     return true;
   });
 
